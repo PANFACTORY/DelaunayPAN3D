@@ -151,16 +151,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Delaunay.h" />
+    <ClInclude Include="Element.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="Parameter.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Surface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Delaunay3Dver3.cpp" />
+    <ClCompile Include="Element.cpp" />
+    <ClCompile Include="Node.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Surface.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
