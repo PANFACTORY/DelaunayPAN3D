@@ -21,12 +21,12 @@ public:
 	Surface(Node*, Node*, Node*, Element*, Element*);
 
 
+	Element* pneighbor;					//隣接要素を指すポインタ
 	bool IsActive;						//true:多面体の境界面
 	std::array<Node*, 3> pnodes;		//節点
 	Element* pparent;					//この面を持つ要素を指すポインタ
-	Element* pneighbor;					//隣接要素を指すポインタ
-
-
+	
+	
 	bool operator==(const Surface &);	//接している面か判定
 
 

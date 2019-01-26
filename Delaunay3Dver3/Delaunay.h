@@ -73,7 +73,6 @@ namespace Delaunay3D {
 		}
 
 		//----------多面体の凹部を埋める----------
-		//未完成
 		bool is_anysurface_invalid = true;
 		while (is_anysurface_invalid) {
 			is_anysurface_invalid = false;
@@ -95,19 +94,14 @@ namespace Delaunay3D {
 								stack.push_back(peadd);
 								peadd->IsActive = false;
 
-								//----------追加した要素の各面について----------
+								//----------追加した要素の各面について隣接面をFalseに----------
 								for (auto& psurface : peadd->psurfaces) {
-									if (psurface->pneighbor != nullptr) {
-
-										//----------隣接要素がstack内に無い場合----------
-										if (psurface->pneighbor->IsActive) {
-											sstack.push_back(psurface);
-										}
-
-										//----------stack内にある場合----------
-										else {
-
-										}
+									Element* pneighbor = psurface->pneighbor;
+									if (pneighbor != nullptr && !pneighbor->IsActive) {
+										pneighbor->GetAdjacentSurface(peadd)->IsActive = false;
+									}
+									else {
+										sstack.push_back(psurface);
 									}
 								}
 								break;
@@ -125,16 +119,49 @@ namespace Delaunay3D {
 
 		//----------新しい要素を生成----------
 		std::vector<Element*> penew;				//新しく生成される要素を指すポインタのスタック
-
 		for (auto& psurface : sstack) {
 			if (psurface->IsActive) {
 				Element* tmp = new Element(psurface->pnodes[0], psurface->pnodes[1], psurface->pnodes[2], _node);
-				tmp->psurfaces[3]->pneighbor = psurface[3].pneighbor;
+				tmp->psurfaces[3]->pneighbor = psurface->pneighbor;
 				penew.push_back(tmp);
 			}
 		}
 
-		return _pethis;
+		//----------新しく生成された要素同士の隣接関係を計算----------
+		for (auto pelement : penew) {
+			for (auto psurface : pelement->psurfaces) {
+				if (psurface->pneighbor == nullptr) {
+					for (auto pelement2 : penew) {
+						if (pelement != pelement2) {
+							for (auto psurface2 : pelement2->psurfaces) {
+								if (*psurface == *psurface2) {
+									psurface->pneighbor = pelement2;
+									psurface2->pneighbor = pelement;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		//----------新しく生成された要素をelistに追加----------
+		for (auto pelement : penew) {
+			_elist.push_back(pelement);
+		}
+
+		//----------stack内の古い要素を削除----------
+		for (auto& pelement : _elist) {
+			if (!pelement->IsActive) {
+				auto tmp = pelement;
+				pelement = *(_elist.end() - 1);
+				_elist.pop_back();
+				delete tmp;
+			}
+		}
+
+		return penew[0];
 	}
 
 

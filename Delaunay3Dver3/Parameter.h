@@ -1,7 +1,7 @@
 #pragma once
 
 
-#define MODELNAME	"Model5"	//モデル名
+#define MODELNAME	"Model6"	//モデル名
 //Model8でバグが発現
 
 

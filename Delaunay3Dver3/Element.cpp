@@ -15,7 +15,11 @@
 Element::Element(){}
 
 
-Element::~Element(){}
+Element::~Element(){
+	for (auto& psurface : this->psurfaces) {
+		delete psurface;
+	}
+}
 
 
 Element::Element(Node *_pnode0, Node *_pnode1, Node *_pnode2, Node *_pnode3){
@@ -48,9 +52,9 @@ Element::Element(Node *_pnode0, Node *_pnode1, Node *_pnode2, Node *_pnode3){
 }
 
 
-Element* Element::GetLocateId(Node *_node){
+Element* Element::GetLocateId(Node *_pnode){
 	for (auto surface : this->psurfaces) {
-		if (surface->IsRayCross(this->gcenter, this->gcenter - *_node) == true) {
+		if (surface->IsRayCross(this->gcenter, this->gcenter - *_pnode) == true) {
 			return surface->pneighbor;
 		}
 	}
@@ -58,17 +62,19 @@ Element* Element::GetLocateId(Node *_node){
 }
 
 
-bool Element::IsInSphere(Node *_node){
-	if (sround > (this->scenter - *_node).Size() - EPS) {
+bool Element::IsInSphere(Node *_pnode){
+	if (sround > (this->scenter - *_pnode).Size() - EPS) {
 		return true;
 	}
 	return false;
 }
 
 
-//•Û—¯
-int Element::GetNeighborId(int)
-{
-	
-	return 0;
+Surface* Element::GetAdjacentSurface(Element* _pelement){
+	for (auto& psurface : this->psurfaces) {
+		if (psurface->pneighbor == _pelement) {
+			return psurface;
+		}
+	}
+	return nullptr;
 }
