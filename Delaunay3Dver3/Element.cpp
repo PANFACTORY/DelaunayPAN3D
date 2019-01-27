@@ -5,8 +5,8 @@
 //Copyright	:(C)2019 TanabeYuta
 //*********************************************************
 
-
 #include "pch.h"
+
 #include "Surface.h"
 #include "Element.h"
 #include "Parameter.h"
@@ -24,6 +24,9 @@ Element::~Element(){
 
 Element::Element(Node *_pnode0, Node *_pnode1, Node *_pnode2, Node *_pnode3){
 	this->IsActive = true;
+
+	//----------’¸“_‚ðÝ’è----------
+	this->pnodes[0] = _pnode0;	this->pnodes[1] = _pnode1;	this->pnodes[2] = _pnode2;	this->pnodes[3] = _pnode3;
 
 	//----------Še–Ê‚ðÝ’è----------
 	this->psurfaces[0] = new Surface(_pnode1, _pnode3, _pnode2, this, nullptr);

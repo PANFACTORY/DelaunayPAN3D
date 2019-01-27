@@ -23,6 +23,7 @@ public:
 
 	bool IsActive;
 	std::array<Surface*, 4> psurfaces;		//四面体の表面
+	std::array<Node*, 4> pnodes;			//四面体を構成する頂点
 	Node scenter;							//外接球の中心座標
 	double sround;							//外接球の半径
 	Node gcenter;							//四面体の重心座標

@@ -123,6 +123,9 @@ namespace Delaunay3D {
 			if (psurface->IsActive) {
 				Element* tmp = new Element(psurface->pnodes[0], psurface->pnodes[1], psurface->pnodes[2], _node);
 				tmp->psurfaces[3]->pneighbor = psurface->pneighbor;
+				if (psurface->pneighbor != nullptr) {
+					psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = tmp;
+				}
 				penew.push_back(tmp);
 			}
 		}
@@ -160,8 +163,8 @@ namespace Delaunay3D {
 				delete tmp;
 			}
 		}
-
-		return penew[0];
+		
+		return *(_elist.end() - 1);
 	}
 
 
@@ -171,19 +174,39 @@ namespace Delaunay3D {
 
 		Element* pethis = _elist[0];										//現在調べている要素を指すポインタ
 		for (auto& pnode : _nlist) {
-			while (1) {
-				int count = 0;
-				Element* penext = pethis->GetLocateId(pnode);				//次に調べる要素を指すポインタ
-				//----------要素内に点があるとき----------
-				if (penext == pethis) {
-					std::cout << "at\t" << pethis << "\n";
-					pethis = MeshLocal(pnode, pethis, _elist);
-					break;
+			if (pnode->type != -1) {
+				while (1) {
+					int count = 0;
+					Element* penext = pethis->GetLocateId(pnode);				//次に調べる要素を指すポインタ
+					//----------要素内に点があるとき----------
+					if (penext == pethis) {
+						std::cout << "at\t" << pethis << "\n";
+						pethis = MeshLocal(pnode, pethis, _elist);
+						break;
+					}
+					//----------ないとき----------
+					else {
+						pethis = penext;
+					}
 				}
-				//----------ないとき----------
-				else {
-					pethis = penext;
+			}
+		}
+	}
+
+
+	//**********仮想四面体の削除**********
+	void DeleteSupertetrahedran(std::vector<Element*> &_elist) {
+		for (auto& pelement : _elist) {
+			if (pelement->pnodes[0]->type == -1 || pelement->pnodes[1]->type == -1 || pelement->pnodes[2]->type == -1 || pelement->pnodes[3]->type == -1) {
+				for (auto& psurface : pelement->psurfaces) {
+					if (psurface->pneighbor != nullptr) {
+						psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = nullptr;
+					}
 				}
+				auto tmp = pelement;
+				pelement = *(_elist.end() - 1);
+				_elist.pop_back();
+				delete tmp;
 			}
 		}
 	}
