@@ -34,12 +34,15 @@ namespace Delaunay3D {
 		rmax *= 1.5 * 3.0;
 
 		//----------仮想四面体の生成----------
-		Node* nst0 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*0.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*0.0*M_PI / 3.0), -rmax / 3.0, -1);
-		Node* nst1 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*1.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*1.0*M_PI / 3.0), -rmax / 3.0, -1);
-		Node* nst2 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*2.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*2.0*M_PI / 3.0), -rmax / 3.0, -1);
-		Node* nst3 = new Node(0.0, 0.0, rmax, -1);
-
-		_nlist.push_back(nst0);		_nlist.push_back(nst1);		_nlist.push_back(nst2);		_nlist.push_back(nst3);
+		Node* nst0 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*0.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*0.0*M_PI / 3.0), -rmax / 3.0, -1, _nlist.size());
+		_nlist.push_back(nst0);
+		Node* nst1 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*1.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*1.0*M_PI / 3.0), -rmax / 3.0, -1, _nlist.size());
+		_nlist.push_back(nst1);
+		Node* nst2 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*2.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*2.0*M_PI / 3.0), -rmax / 3.0, -1, _nlist.size());
+		_nlist.push_back(nst2);
+		Node* nst3 = new Node(0.0, 0.0, rmax, -1, _nlist.size());
+		_nlist.push_back(nst3);
+		
 		_elist.push_back(new Element(nst0, nst1, nst2, nst3));
 	}
 
@@ -196,17 +199,15 @@ namespace Delaunay3D {
 
 	//**********仮想四面体の削除**********
 	void DeleteSupertetrahedran(std::vector<Element*> &_elist) {
-		for (auto& pelement : _elist) {
-			if (pelement->pnodes[0]->type == -1 || pelement->pnodes[1]->type == -1 || pelement->pnodes[2]->type == -1 || pelement->pnodes[3]->type == -1) {
-				for (auto& psurface : pelement->psurfaces) {
+		for (int i = _elist.size() - 1; i >= 0; i--) {
+			if (_elist[i]->pnodes[0]->type == -1 || _elist[i]->pnodes[1]->type == -1 || _elist[i]->pnodes[2]->type == -1 || _elist[i]->pnodes[3]->type == -1) {
+				for (auto& psurface : _elist[i]->psurfaces) {
 					if (psurface->pneighbor != nullptr) {
 						psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = nullptr;
 					}
 				}
-				auto tmp = pelement;
-				pelement = *(_elist.end() - 1);
-				_elist.pop_back();
-				delete tmp;
+				delete _elist[i];
+				_elist.erase(_elist.begin() + i);
 			}
 		}
 	}

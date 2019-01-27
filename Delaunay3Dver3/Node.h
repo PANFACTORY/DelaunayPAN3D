@@ -11,11 +11,12 @@ class Node
 public:
 	Node();
 	~Node();
-	Node(double, double, double, int);
+	Node(double, double, double, int, int);
 
 
 	double x, y, z;						//座標
 	int type;							//節点の種類
+	int id;								//節点の番号
 
 
 	Node operator+(const Node &);		//ベクトルの和を計算

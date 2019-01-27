@@ -39,14 +39,14 @@ Element::Element(Node *_pnode0, Node *_pnode1, Node *_pnode2, Node *_pnode3){
 	Node v1 = *_pnode2 - *_pnode0;
 	Node v2 = *_pnode3 - *_pnode0;
 
-	Node ABC = Node(0.5*((*_pnode1 ^ *_pnode1) - (*_pnode0 ^ *_pnode0)), 0.5*((*_pnode2 ^ *_pnode2) - (*_pnode0 ^ *_pnode0)), 0.5*((*_pnode3 ^ *_pnode3) - (*_pnode0 ^ *_pnode0)), -1);
+	Node ABC = Node(0.5*((*_pnode1 ^ *_pnode1) - (*_pnode0 ^ *_pnode0)), 0.5*((*_pnode2 ^ *_pnode2) - (*_pnode0 ^ *_pnode0)), 0.5*((*_pnode3 ^ *_pnode3) - (*_pnode0 ^ *_pnode0)), -1, -1);
 
 	double detP = v0 ^ (v1 * v2);
 	Node P0 = v1 * v2;
 	Node P1 = v2 * v0;
 	Node P2 = v0 * v1;
 
-	this->scenter = Node((ABC.x * P0.x + ABC.y * P1.x + ABC.z * P2.x) / detP, (ABC.x * P0.y + ABC.y * P1.y + ABC.z * P2.y) / detP, (ABC.x * P0.z + ABC.y * P1.z + ABC.z * P2.z) / detP, -1);
+	this->scenter = Node((ABC.x * P0.x + ABC.y * P1.x + ABC.z * P2.x) / detP, (ABC.x * P0.y + ABC.y * P1.y + ABC.z * P2.y) / detP, (ABC.x * P0.z + ABC.y * P1.z + ABC.z * P2.z) / detP, -1, -1);
 
 	this->sround = (this->scenter - *_pnode0).Size();
 

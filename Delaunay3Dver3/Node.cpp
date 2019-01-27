@@ -18,23 +18,23 @@ Node::Node(){}
 Node::~Node(){}
 
 
-Node::Node(double _x, double _y, double _z, int _type){
-	this->x = _x;	this->y = _y;	this->z = _z;	this->type = _type;
+Node::Node(double _x, double _y, double _z, int _type, int _id){
+	this->x = _x;	this->y = _y;	this->z = _z;	this->type = _type;		this->id = _id;
 }
 
 
 Node Node::operator+(const Node &_node){
-	return Node(this->x + _node.x, this->y + _node.y, this->z + _node.z, -1);
+	return Node(this->x + _node.x, this->y + _node.y, this->z + _node.z, -1, -1);
 }
 
 
 Node Node::operator-(const Node &_node) {
-	return Node(this->x - _node.x, this->y - _node.y, this->z - _node.z, -1);
+	return Node(this->x - _node.x, this->y - _node.y, this->z - _node.z, -1, -1);
 }
 
 
 Node Node::operator*(const Node &_node) {
-	return Node(this->y*_node.z - this->z*_node.y, this->z*_node.x - this->x*_node.z, this->x*_node.y - this->y*_node.x, -1);
+	return Node(this->y*_node.z - this->z*_node.y, this->z*_node.x - this->x*_node.z, this->x*_node.y - this->y*_node.x, -1, -1);
 }
 
 
@@ -44,12 +44,12 @@ double Node::operator^(const Node &_node) {
 
 
 Node Node::operator*(double _a) {
-	return Node(this->x *_a, this->y *_a, this->z *_a, -1);
+	return Node(this->x *_a, this->y *_a, this->z *_a, -1, -1);
 }
 
 
 Node Node::operator/(double _a) {
-	return Node(this->x / _a, this->y / _a, this->z / _a, -1);
+	return Node(this->x / _a, this->y / _a, this->z / _a, -1, -1);
 }
 
 
