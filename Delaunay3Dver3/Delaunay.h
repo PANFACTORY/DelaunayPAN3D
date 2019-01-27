@@ -50,7 +50,7 @@ namespace Delaunay3D {
 
 
 	//**********‹ÇŠDelaunay•ªŠ„**********
-	Element* MeshLocal(Node *_node, Element *_pethis, std::vector<Element*> &_elist) {
+	void MeshLocal(Node *_node, Element *_pethis, std::vector<Element*> &_elist) {
 		std::vector<Element*> stack, substack;
 		std::vector<Surface*> sstack;
 
@@ -77,6 +77,7 @@ namespace Delaunay3D {
 		}
 
 		//----------‘½–Ê‘Ì‚Ì‰š•”‚ğ–„‚ß‚é----------
+		//uV‚µ‚­’Ç‰Á‚Å‚«‚é—v‘f‚ª–³‚¢ê‡v‚Ì•”•ª‚ğŒo—R‚µ‚½‚Æ‚«ƒoƒO‚ª”­¶
 		bool is_anysurface_invalid = true;
 		while (is_anysurface_invalid) {
 			is_anysurface_invalid = false;
@@ -134,8 +135,10 @@ namespace Delaunay3D {
 			}
 		}
 
-		//----------V‚µ‚­¶¬‚³‚ê‚½—v‘f“¯m‚Ì—×ÚŠÖŒW‚ğŒvZ----------
+		//----------V‚µ‚­¶¬‚³‚ê‚½—v‘f‚ğelist‚É’Ç‰Á‚µC—v‘f“¯m‚Ì—×ÚŠÖŒW‚ğŒvZ----------
 		for (auto pelement : penew) {
+			_elist.push_back(pelement);
+
 			for (auto psurface : pelement->psurfaces) {
 				if (psurface->pneighbor == nullptr) {
 					for (auto pelement2 : penew) {
@@ -152,23 +155,17 @@ namespace Delaunay3D {
 				}
 			}
 		}
-		
-		//----------V‚µ‚­¶¬‚³‚ê‚½—v‘f‚ğelist‚É’Ç‰Á----------
-		for (auto pelement : penew) {
-			_elist.push_back(pelement);
-		}
 
 		//----------stack“à‚ÌŒÃ‚¢—v‘f‚ğíœ----------
-		for (int i = _elist.size() - 1; i >= 0; i--) {
-			if (!_elist[i]->IsActive) {
-				Element* tmp = _elist[i];
-				_elist[i] = *(_elist.end() - 1);
-				_elist.pop_back();
-				delete tmp;
+		for (auto it = _elist.begin(); it != _elist.end(); ) {
+			if (!(*it)->IsActive) {
+				delete *it;
+				it = _elist.erase(it);
+			}
+			else {
+				++it;
 			}
 		}
-		
-		return *(_elist.end() - 1);
 	}
 
 
@@ -185,7 +182,8 @@ namespace Delaunay3D {
 					//----------—v‘f“à‚É“_‚ª‚ ‚é‚Æ‚«----------
 					if (penext == pethis) {
 						//std::cout << "\tat\t" << pethis << "\n";
-						pethis = MeshLocal(pnode, pethis, _elist);
+						MeshLocal(pnode, pethis, _elist);
+						pethis = *(_elist.end() - 1);
 						break;
 					}
 					//----------‚È‚¢‚Æ‚«----------
@@ -232,6 +230,40 @@ namespace Delaunay3D {
 				delete _elist[i];
 				_elist.erase(_elist.begin() + i);
 			}
+		}
+	}
+
+
+	//**********×‚©‚¢Delaunay•ªŠ„**********
+	void MakeFineMesh(std::vector<Node*> &_nlist, std::vector<Element*> &_elist) {
+		std::cout << "Make fine mash\n";
+
+		for (int i = 0; i < ADDNODE; i++) {
+			//----------Å’·‚Ì•Ó‚ğ’Tõ----------
+			double edgelengthmax = 0.0;
+			Element* pethis = nullptr;
+			Node* pnode0 = nullptr;
+			Node* pnode1 = nullptr;
+
+			for (auto pelement : _elist) {
+				for (int j = 0; j < 3; j++) {
+					for (int k = j + 1; k < 3; k++) {
+						double edgelength = (*pelement->pnodes[k] - *pelement->pnodes[j]).Size();
+						if (edgelength > edgelengthmax) {
+							edgelengthmax = edgelength;
+							pethis = pelement;
+							pnode0 = pelement->pnodes[j];
+							pnode1 = pelement->pnodes[k];
+						}
+					}
+				}
+			}
+
+			//----------Å’·‚Ì•Ó‚Ì’†“_‚ğß“_‚É’Ç‰Á----------
+			Node tmp = (*pnode0 + *pnode1) / 2.0;
+			Node* nnew = new Node(tmp.x, tmp.y, tmp.z, 2, _nlist.size());
+			_nlist.push_back(nnew);
+			MeshLocal(nnew, pethis, _elist);
 		}
 	}
 }
