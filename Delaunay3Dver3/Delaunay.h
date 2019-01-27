@@ -184,7 +184,7 @@ namespace Delaunay3D {
 					Element* penext = pethis->GetLocateId(pnode);				//次に調べる要素を指すポインタ
 					//----------要素内に点があるとき----------
 					if (penext == pethis) {
-						std::cout << "\tat\t" << pethis << "\n";
+						//std::cout << "\tat\t" << pethis << "\n";
 						pethis = MeshLocal(pnode, pethis, _elist);
 						break;
 					}

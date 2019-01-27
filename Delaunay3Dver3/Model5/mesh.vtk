@@ -1,5 +1,5 @@
 # vtk DataFile Version 4.1
-Model5
+Model5/mesh
 ASCII
 DATASET UNSTRUCTURED_GRID
 POINTS	404	float
