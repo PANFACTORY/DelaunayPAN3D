@@ -50,7 +50,6 @@ namespace Delaunay3D {
 
 
 	//**********局所Delaunay分割**********
-	//局所的にDelaunay分割した後末尾の要素のidを返す
 	Element* MeshLocal(Node *_node, Element *_pethis, std::vector<Element*> &_elist) {
 		std::vector<Element*> stack, substack;
 		std::vector<Surface*> sstack;
@@ -160,10 +159,10 @@ namespace Delaunay3D {
 		}
 
 		//----------stack内の古い要素を削除----------
-		for (auto& pelement : _elist) {
-			if (!pelement->IsActive) {
-				auto tmp = pelement;
-				pelement = *(_elist.end() - 1);
+		for (int i = _elist.size() - 1; i >= 0; i--) {
+			if (!_elist[i]->IsActive) {
+				Element* tmp = _elist[i];
+				_elist[i] = *(_elist.end() - 1);
 				_elist.pop_back();
 				delete tmp;
 			}
@@ -180,8 +179,8 @@ namespace Delaunay3D {
 		Element* pethis = _elist[0];										//現在調べている要素を指すポインタ
 		for (auto& pnode : _nlist) {
 			if (pnode->type != -1) {
+				int count = 0;
 				while (1) {
-					int count = 0;
 					Element* penext = pethis->GetLocateId(pnode);				//次に調べる要素を指すポインタ
 					//----------要素内に点があるとき----------
 					if (penext == pethis) {
