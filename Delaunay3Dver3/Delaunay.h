@@ -9,9 +9,11 @@
 #pragma once
 #define _USE_MATH_DEFINES
 
+
 #include <math.h>
 #include <iostream>
 #include <vector>
+
 
 #include "Parameter.h"
 #include "Node.h"
@@ -183,7 +185,7 @@ namespace Delaunay3D {
 					Element* penext = pethis->GetLocateId(pnode);				//次に調べる要素を指すポインタ
 					//----------要素内に点があるとき----------
 					if (penext == pethis) {
-						std::cout << "at\t" << pethis << "\n";
+						std::cout << "\tat\t" << pethis << "\n";
 						pethis = MeshLocal(pnode, pethis, _elist);
 						break;
 					}
@@ -199,8 +201,30 @@ namespace Delaunay3D {
 
 	//**********仮想四面体の削除**********
 	void DeleteSupertetrahedran(std::vector<Element*> &_elist) {
+		std::cout << "Delete supertetraedron\n";
+
 		for (int i = _elist.size() - 1; i >= 0; i--) {
 			if (_elist[i]->pnodes[0]->type == -1 || _elist[i]->pnodes[1]->type == -1 || _elist[i]->pnodes[2]->type == -1 || _elist[i]->pnodes[3]->type == -1) {
+				for (auto& psurface : _elist[i]->psurfaces) {
+					if (psurface->pneighbor != nullptr) {
+						psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = nullptr;
+					}
+				}
+				delete _elist[i];
+				_elist.erase(_elist.begin() + i);
+			}
+		}
+	}
+
+
+	//**********凹部要素の削除**********
+	void DeleteCreviceElement(std::vector<Element*> &_elist) {
+		std::cout << "Delete Crevice Element\n";
+
+		for (int i = _elist.size() - 1; i >= 0; i--) {
+			if (_elist[i]->pnodes[0]->type == _elist[i]->pnodes[1]->type 
+				&& _elist[i]->pnodes[1]->type == _elist[i]->pnodes[2]->type
+				&& _elist[i]->pnodes[2]->type == _elist[i]->pnodes[3]->type) {
 				for (auto& psurface : _elist[i]->psurfaces) {
 					if (psurface->pneighbor != nullptr) {
 						psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = nullptr;
