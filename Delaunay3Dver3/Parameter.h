@@ -8,4 +8,4 @@
 #define EPS 1.0e-18			//実数の0判断用定数
 
 
-#define ADDNODE	20			//細かい要素分割で生成する要素数
+#define ADDNODE	1000			//細かい要素分割で生成する要素数

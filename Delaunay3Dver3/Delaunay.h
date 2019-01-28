@@ -157,13 +157,13 @@ namespace Delaunay3D {
 		}
 
 		//----------stack内の古い要素を削除----------
-		for (auto it = _elist.begin(); it != _elist.end(); ) {
-			if (!(*it)->IsActive) {
-				delete *it;
-				it = _elist.erase(it);
+		for (auto pelement = _elist.begin(); pelement != _elist.end(); ) {
+			if (!(*pelement)->IsActive) {
+				delete *pelement;
+				pelement = _elist.erase(pelement);
 			}
 			else {
-				++it;
+				++pelement;
 			}
 		}
 	}
@@ -199,16 +199,19 @@ namespace Delaunay3D {
 	//**********仮想四面体の削除**********
 	void DeleteSupertetrahedran(std::vector<Element*> &_elist) {
 		std::cout << "Delete supertetraedron\n";
-
-		for (int i = _elist.size() - 1; i >= 0; i--) {
-			if (_elist[i]->pnodes[0]->type == -1 || _elist[i]->pnodes[1]->type == -1 || _elist[i]->pnodes[2]->type == -1 || _elist[i]->pnodes[3]->type == -1) {
-				for (auto& psurface : _elist[i]->psurfaces) {
+		
+		for (auto pelement = _elist.begin(); pelement != _elist.end(); ) {
+			if ((*pelement)->pnodes[0]->type == -1 || (*pelement)->pnodes[1]->type == -1 || (*pelement)->pnodes[2]->type == -1 || (*pelement)->pnodes[3]->type == -1) {
+				for (auto& psurface : (*pelement)->psurfaces) {
 					if (psurface->pneighbor != nullptr) {
 						psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = nullptr;
 					}
-				}
-				delete _elist[i];
-				_elist.erase(_elist.begin() + i);
+				}				
+				delete *pelement;
+				pelement = _elist.erase(pelement);
+			}
+			else {
+				++pelement;
 			}
 		}
 	}
@@ -218,17 +221,20 @@ namespace Delaunay3D {
 	void DeleteCreviceElement(std::vector<Element*> &_elist) {
 		std::cout << "Delete Crevice Element\n";
 
-		for (int i = _elist.size() - 1; i >= 0; i--) {
-			if (_elist[i]->pnodes[0]->type == _elist[i]->pnodes[1]->type 
-				&& _elist[i]->pnodes[1]->type == _elist[i]->pnodes[2]->type
-				&& _elist[i]->pnodes[2]->type == _elist[i]->pnodes[3]->type) {
-				for (auto& psurface : _elist[i]->psurfaces) {
+		for (auto pelement = _elist.begin(); pelement != _elist.end(); ) {
+			if ((*pelement)->pnodes[0]->type == (*pelement)->pnodes[1]->type
+				&& (*pelement)->pnodes[1]->type == (*pelement)->pnodes[2]->type
+				&& (*pelement)->pnodes[2]->type == (*pelement)->pnodes[3]->type) {
+				for (auto& psurface : (*pelement)->psurfaces) {
 					if (psurface->pneighbor != nullptr) {
 						psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = nullptr;
 					}
 				}
-				delete _elist[i];
-				_elist.erase(_elist.begin() + i);
+				delete *pelement;
+				pelement = _elist.erase(pelement);
+			}
+			else {
+				++pelement;
 			}
 		}
 	}
@@ -260,10 +266,11 @@ namespace Delaunay3D {
 			}
 
 			//----------最長の辺の中点を節点に追加----------
-			Node tmp = (*pnode0 + *pnode1) / 2.0;
-			Node* nnew = new Node(tmp.x, tmp.y, tmp.z, 2, _nlist.size());
-			_nlist.push_back(nnew);
-			MeshLocal(nnew, pethis, _elist);
+			Node* tmp = new Node((*pnode0 + *pnode1) / 2.0);
+			tmp->type = 2;
+			tmp->id = _nlist.size();
+			_nlist.push_back(tmp);
+			MeshLocal(tmp, pethis, _elist);
 		}
 	}
 }
