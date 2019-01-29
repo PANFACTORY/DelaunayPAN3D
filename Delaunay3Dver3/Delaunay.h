@@ -25,27 +25,71 @@ namespace Delaunay3D {
 	//**********‰¼‘zl–Ê‘Ì‚Ì¶¬**********
 	void MakeSupertetrahedran(std::vector<Node*> &_nlist, std::vector<Element*> &_elist) {
 		std::cout << "Make supertetraedron\n";
-
-		//----------ß“_‚Ì‚¤‚¿Å‰“•û“_‚ğ’Tõ----------
-		double rmax = 0.0;
+				
+		//----------ß“_‚Ì‘¶İ”ÍˆÍ‚ğ‹‚ß‚é----------
+		double xmax = 0.0, xmin = 0.0, ymax = 0.0, ymin = 0.0, zmax = 0.0, zmin = 0.0;
 		for (auto pnode : _nlist) {
-			if (pnode->Size() > rmax) {
-				rmax = pnode->Size();
+			if (pnode->x > xmax) { xmax = pnode->x; }
+			if (pnode->x < xmin) { xmin = pnode->x; }
+			if (pnode->y > ymax) { ymax = pnode->y; }
+			if (pnode->y < ymin) { ymin = pnode->y; }
+			if (pnode->z > zmax) { zmax = pnode->z; }
+			if (pnode->z < zmin) { zmin = pnode->z; }
+		}
+
+		//----------À•W‚Ì³‹K‰»----------
+		double xrange = 0.5*(xmax - xmin), yrange = 0.5*(ymax - ymin), zrange = 0.5*(zmax - zmin);
+		double dmax = xrange;
+		if (dmax < yrange) {	dmax = yrange;	}
+		if (dmax < zrange) {	dmax = zrange;	}
+		for (auto& pnode : _nlist) {
+			pnode->x = (pnode->x - xmin) / dmax - 0.5 + ALPHA / 2.0;
+			pnode->y = (pnode->y - ymin) / dmax - 0.5 + ALPHA / 2.0;
+			pnode->z = (pnode->z - zmin) / dmax - 0.5 + ALPHA / 2.0;
+		}
+
+		//----------‰¼‘zl–Ê‘Ìß“_‚Ì¶¬----------
+		Node* nst0 = new Node(0.0, 0.0, 0.0, -1, _nlist.size());
+		_nlist.push_back(nst0);
+		Node* nst1 = new Node(ALPHA, 0.0, 0.0, -1, _nlist.size());
+		_nlist.push_back(nst1);
+		Node* nst2 = new Node(ALPHA, ALPHA, 0.0, -1, _nlist.size());
+		_nlist.push_back(nst2);
+		Node* nst3 = new Node(0.0, ALPHA, 0.0, -1, _nlist.size());
+		_nlist.push_back(nst3);
+		Node* nst4 = new Node(0.0, 0.0, ALPHA, -1, _nlist.size());
+		_nlist.push_back(nst4);
+		Node* nst5 = new Node(ALPHA, 0.0, ALPHA, -1, _nlist.size());
+		_nlist.push_back(nst5);
+		Node* nst6 = new Node(ALPHA, ALPHA, ALPHA, -1, _nlist.size());
+		_nlist.push_back(nst6);
+		Node* nst7 = new Node(0.0, ALPHA, ALPHA, -1, _nlist.size());
+		_nlist.push_back(nst7);
+		
+		//----------‰¼‘zl–Ê‘ÌŒQ‚Ì¶¬----------
+		_elist.push_back(new Element(nst1, nst3, nst0, nst7));
+		_elist.push_back(new Element(nst2, nst1, nst6, nst7));
+		_elist.push_back(new Element(nst2, nst3, nst1, nst7));
+		_elist.push_back(new Element(nst1, nst5, nst6, nst7));
+		_elist.push_back(new Element(nst1, nst0, nst5, nst7));
+		_elist.push_back(new Element(nst4, nst5, nst0, nst7));
+
+		//----------—v‘f“¯m‚Ì—×ÚŠÖŒW‚ğŒvZ----------
+		for (auto& pelement : _elist) {
+			for (auto& psurface : pelement->psurfaces) {
+				if (psurface->pneighbor == nullptr) {
+					for (auto& pelement2 : _elist) {
+						for (auto& psurface2 : pelement2->psurfaces) {
+							if (*psurface == *psurface2) {
+								psurface->pneighbor = pelement2;
+								psurface2->pneighbor = pelement;
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
-		rmax *= 1.5 * 3.0;
-
-		//----------‰¼‘zl–Ê‘Ì‚Ì¶¬----------
-		Node* nst0 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*0.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*0.0*M_PI / 3.0), -rmax / 3.0, -1, _nlist.size());
-		_nlist.push_back(nst0);
-		Node* nst1 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*1.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*1.0*M_PI / 3.0), -rmax / 3.0, -1, _nlist.size());
-		_nlist.push_back(nst1);
-		Node* nst2 = new Node(rmax * 2.0*sqrt(2.0) / 3.0 *cos(2.0*2.0*M_PI / 3.0), rmax * 2.0*sqrt(2.0) / 3.0 *sin(2.0*2.0*M_PI / 3.0), -rmax / 3.0, -1, _nlist.size());
-		_nlist.push_back(nst2);
-		Node* nst3 = new Node(0.0, 0.0, rmax, -1, _nlist.size());
-		_nlist.push_back(nst3);
-		
-		_elist.push_back(new Element(nst0, nst1, nst2, nst3));
 	}
 
 
@@ -99,7 +143,7 @@ namespace Delaunay3D {
 								stack.push_back(peadd);
 								peadd->IsActive = false;
 
-								//----------’Ç‰Á‚µ‚½—v‘f‚ÌŠe–Ê‚É‚Â‚¢‚Ä—×Ú–Ê‚ğFalse‚É----------
+								//----------’Ç‰Á‚µ‚½—v‘f‚ÌŠe–Ê‚É‚Â‚¢‚Ä‹¤—L–Ê‚ğFalse‚É----------
 								for (auto& psurface : peadd->psurfaces) {
 									Element* pneighbor = psurface->pneighbor;
 									if (pneighbor != nullptr && !pneighbor->IsActive) {
@@ -132,23 +176,20 @@ namespace Delaunay3D {
 					psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = tmp;
 				}
 				penew.push_back(tmp);
+				_elist.push_back(tmp);
 			}
 		}
 
-		//----------V‚µ‚­¶¬‚³‚ê‚½—v‘f‚ğelist‚É’Ç‰Á‚µC—v‘f“¯m‚Ì—×ÚŠÖŒW‚ğŒvZ----------
-		for (auto pelement : penew) {
-			_elist.push_back(pelement);
-
-			for (auto psurface : pelement->psurfaces) {
+		//----------V‚µ‚­¶¬‚³‚ê‚½—v‘f“¯m‚Ì—×ÚŠÖŒW‚ğŒvZ----------
+		for (auto& pelement : penew) {
+			for (auto& psurface : pelement->psurfaces) {
 				if (psurface->pneighbor == nullptr) {
-					for (auto pelement2 : penew) {
-						if (pelement != pelement2) {
-							for (auto psurface2 : pelement2->psurfaces) {
-								if (*psurface == *psurface2) {
-									psurface->pneighbor = pelement2;
-									psurface2->pneighbor = pelement;
-									break;
-								}
+					for (auto& pelement2 : penew) {
+						for (auto& psurface2 : pelement2->psurfaces) {
+							if (*psurface == *psurface2) {
+								psurface->pneighbor = pelement2;
+								psurface2->pneighbor = pelement;
+								break;
 							}
 						}
 					}
@@ -171,7 +212,7 @@ namespace Delaunay3D {
 
 	//**********‘e‚¢Delaunay•ªŠ„**********
 	void MakeRoughMesh(std::vector<Node*> _nlist, std::vector<Element*> &_elist) {
-		std::cout << "Make rough mash\n";
+		std::cout << "Make rough mesh\n";
 
 		Element* pethis = _elist[0];										//Œ»İ’²‚×‚Ä‚¢‚é—v‘f‚ğw‚·ƒ|ƒCƒ“ƒ^
 		for (auto& pnode : _nlist) {
@@ -201,7 +242,10 @@ namespace Delaunay3D {
 		std::cout << "Delete supertetraedron\n";
 		
 		for (auto pelement = _elist.begin(); pelement != _elist.end(); ) {
-			if ((*pelement)->pnodes[0]->type == -1 || (*pelement)->pnodes[1]->type == -1 || (*pelement)->pnodes[2]->type == -1 || (*pelement)->pnodes[3]->type == -1) {
+			if ((*pelement)->pnodes[0]->type == -1 
+				|| (*pelement)->pnodes[1]->type == -1 
+				|| (*pelement)->pnodes[2]->type == -1 
+				|| (*pelement)->pnodes[3]->type == -1) {
 				for (auto& psurface : (*pelement)->psurfaces) {
 					if (psurface->pneighbor != nullptr) {
 						psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = nullptr;
@@ -242,7 +286,7 @@ namespace Delaunay3D {
 
 	//**********×‚©‚¢Delaunay•ªŠ„**********
 	void MakeFineMesh(std::vector<Node*> &_nlist, std::vector<Element*> &_elist) {
-		std::cout << "Make fine mash\n";
+		std::cout << "Make fine mesh\n";
 
 		for (int i = 0; i < ADDNODE; i++) {
 			//----------Å’·‚Ì•Ó‚ğ’Tõ----------
