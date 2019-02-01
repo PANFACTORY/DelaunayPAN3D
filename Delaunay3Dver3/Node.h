@@ -25,6 +25,7 @@ public:
 	double operator^(const Node &);		//ベクトルの内積を計算
 	Node operator*(double);				//ベクトルのスカラー倍を計算
 	Node operator/(double);				//ベクトルのスカラ―商を計算
+	bool operator==(const Node &);		//等価判定
 
 
 	double Size();						//ベクトルの大きさを計算

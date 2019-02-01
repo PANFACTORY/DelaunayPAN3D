@@ -6,6 +6,7 @@
 //*********************************************************
 
 #include "pch.h"
+#include <fenv.h>
 
 #include "Surface.h"
 #include "Element.h"
@@ -52,12 +53,22 @@ Element::Element(Node *_pnode0, Node *_pnode1, Node *_pnode2, Node *_pnode3){
 
 	//----------重心座標の計算----------
 	this->gcenter = (*_pnode0 + *_pnode1 + *_pnode2 + *_pnode3) / 4.0;
+
+	//----------体積を計算----------
+	this->volume = ((*_pnode1 - *_pnode0) * (*_pnode2 - *_pnode0)) ^ (*_pnode3 - *_pnode0);
+	
+	//----------アスペクト比を計算----------
+	this->aspect = this->volume / pow(this->sround, 3.0) / ARTETRAHEDRON;
+	if (fetestexcept(FE_DIVBYZERO)) {
+		feclearexcept(FE_ALL_EXCEPT);
+		this->aspect = 0.0;
+	}
 }
 
 
 Element* Element::GetLocateId(Node *_pnode){
 	for (auto surface : this->psurfaces) {
-		if (surface->IsRayCross(this->gcenter, this->gcenter - *_pnode) == true) {
+		if (surface->IsRayCross(this->gcenter, this->gcenter - *_pnode)) {
 			return surface->pneighbor;
 		}
 	}
@@ -66,7 +77,7 @@ Element* Element::GetLocateId(Node *_pnode){
 
 
 bool Element::IsInSphere(Node *_pnode){
-	if (sround > (this->scenter - *_pnode).Size() - EPS) {
+	if (sround + EPS > (this->scenter - *_pnode).Size()) {
 		return true;
 	}
 	return false;

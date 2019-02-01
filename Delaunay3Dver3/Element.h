@@ -27,6 +27,8 @@ public:
 	Node scenter;							//外接球の中心座標
 	double sround;							//外接球の半径
 	Node gcenter;							//四面体の重心座標
+	double volume;							//四面体の体積
+	double aspect;							//四面体のアスペクト比
 
 
 	Element* GetLocateId(Node*);			//要素内に点があれば自身を指すポインタを返す　そうでなければ隣接要素を指すポインタを返す

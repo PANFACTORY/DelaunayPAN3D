@@ -10,20 +10,21 @@
 #include <cmath>
 
 #include "Node.h"
+#include "Parameter.h"
 
 
-Node::Node(){}
+Node::Node() {}
 
 
-Node::~Node(){}
+Node::~Node() {}
 
 
-Node::Node(double _x, double _y, double _z, int _type, int _id){
+Node::Node(double _x, double _y, double _z, int _type, int _id) {
 	this->x = _x;	this->y = _y;	this->z = _z;	this->type = _type;		this->id = _id;
 }
 
 
-Node Node::operator+(const Node &_node){
+Node Node::operator+(const Node &_node) {
 	return Node(this->x + _node.x, this->y + _node.y, this->z + _node.z, -1, -1);
 }
 
@@ -50,6 +51,14 @@ Node Node::operator*(double _a) {
 
 Node Node::operator/(double _a) {
 	return Node(this->x / _a, this->y / _a, this->z / _a, -1, -1);
+}
+
+
+bool Node::operator==(const Node &_node) {
+	if (fabs(this->x - _node.x) < EPS && fabs(this->y - _node.y) < EPS && fabs(this->z - _node.z) < EPS){
+		return true;
+	}
+	return false;
 }
 
 

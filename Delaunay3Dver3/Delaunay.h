@@ -43,27 +43,27 @@ namespace Delaunay3D {
 		if (dmax < yrange) {	dmax = yrange;	}
 		if (dmax < zrange) {	dmax = zrange;	}
 		for (auto& pnode : _nlist) {
-			pnode->x = (pnode->x - xmin) / dmax - 0.5 + ALPHA / 2.0;
-			pnode->y = (pnode->y - ymin) / dmax - 0.5 + ALPHA / 2.0;
-			pnode->z = (pnode->z - zmin) / dmax - 0.5 + ALPHA / 2.0;
+			pnode->x = (pnode->x - xmin) / dmax + 0.5*(ALPHA - 1.0)*xrange / dmax;
+			pnode->y = (pnode->y - ymin) / dmax + 0.5*(ALPHA - 1.0)*yrange / dmax;
+			pnode->z = (pnode->z - zmin) / dmax + 0.5*(ALPHA - 1.0)*zrange / dmax;
 		}
 
 		//----------仮想四面体節点の生成----------
 		Node* nst0 = new Node(0.0, 0.0, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst0);
-		Node* nst1 = new Node(ALPHA, 0.0, 0.0, -1, _nlist.size());
+		Node* nst1 = new Node(ALPHA*xrange / dmax, 0.0, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst1);
-		Node* nst2 = new Node(ALPHA, ALPHA, 0.0, -1, _nlist.size());
+		Node* nst2 = new Node(ALPHA*xrange / dmax, ALPHA*yrange / dmax, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst2);
-		Node* nst3 = new Node(0.0, ALPHA, 0.0, -1, _nlist.size());
+		Node* nst3 = new Node(0.0, ALPHA*yrange / dmax, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst3);
-		Node* nst4 = new Node(0.0, 0.0, ALPHA, -1, _nlist.size());
+		Node* nst4 = new Node(0.0, 0.0, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst4);
-		Node* nst5 = new Node(ALPHA, 0.0, ALPHA, -1, _nlist.size());
+		Node* nst5 = new Node(ALPHA*xrange / dmax, 0.0, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst5);
-		Node* nst6 = new Node(ALPHA, ALPHA, ALPHA, -1, _nlist.size());
+		Node* nst6 = new Node(ALPHA*xrange / dmax, ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst6);
-		Node* nst7 = new Node(0.0, ALPHA, ALPHA, -1, _nlist.size());
+		Node* nst7 = new Node(0.0, ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst7);
 		
 		//----------仮想四面体群の生成----------
@@ -128,21 +128,19 @@ namespace Delaunay3D {
 
 			for (int i = 0; i < sstack.size(); i++) {
 				if (sstack[i]->IsActive) {
-					Node vn = (*sstack[i]->pnodes[1] - *sstack[i]->pnodes[0]) * (*sstack[i]->pnodes[2] - *sstack[i]->pnodes[0]);
-					Node vp = *_node - *sstack[i]->pnodes[0];
-					double D = vn ^ vp;
-
+					Element D = Element(sstack[i]->pnodes[0], sstack[i]->pnodes[1], sstack[i]->pnodes[2], _node);
+					
 					//----------不良な面がある場合----------
-					if (D < EPS) {
+					if (D.volume < EPS) {
 						Element* peadd = sstack[i]->pneighbor;			//不良な面に隣接する要素を指すポインタ
 
 						//----------新しく追加できる要素がある場合----------
 						if (peadd != nullptr) {
 							if (peadd->IsActive) {
 								is_anysurface_invalid = true;
-								stack.push_back(peadd);
 								peadd->IsActive = false;
-
+								stack.push_back(peadd);
+								
 								//----------追加した要素の各面について共有面をFalseに----------
 								for (auto& psurface : peadd->psurfaces) {
 									Element* pneighbor = psurface->pneighbor;
@@ -158,7 +156,7 @@ namespace Delaunay3D {
 						}
 
 						//----------新しく追加できる要素が無い場合----------
-						else if (fabs(D) < EPS) {
+						else if (fabs(D.volume) < EPS) {
 							sstack[i]->IsActive = false;
 						}
 					}
@@ -181,15 +179,23 @@ namespace Delaunay3D {
 		}
 
 		//----------新しく生成された要素同士の隣接関係を計算----------
+		//扁平要素を検出したときに自己修正できるのがベスト
 		for (auto& pelement : penew) {
 			for (auto& psurface : pelement->psurfaces) {
+				OUT:
 				if (psurface->pneighbor == nullptr) {
 					for (auto& pelement2 : penew) {
 						for (auto& psurface2 : pelement2->psurfaces) {
 							if (*psurface == *psurface2) {
+
+								//----------扁平要素が検出されたとき----------
+								if (psurface2->pneighbor != nullptr) {
+									std::cout << "!!";
+								}
+
 								psurface->pneighbor = pelement2;
 								psurface2->pneighbor = pelement;
-								break;
+								goto OUT;
 							}
 						}
 					}
@@ -287,14 +293,14 @@ namespace Delaunay3D {
 	//**********細かいDelaunay分割**********
 	void MakeFineMesh(std::vector<Node*> &_nlist, std::vector<Element*> &_elist) {
 		std::cout << "Make fine mesh\n";
-
+		
 		for (int i = 0; i < ADDNODE; i++) {
 			//----------最長の辺を探索----------
 			double edgelengthmax = 0.0;
 			Element* pethis = nullptr;
 			Node* pnode0 = nullptr;
 			Node* pnode1 = nullptr;
-
+					   
 			for (auto pelement : _elist) {
 				for (int j = 0; j < 3; j++) {
 					for (int k = j + 1; k < 3; k++) {
@@ -308,7 +314,7 @@ namespace Delaunay3D {
 					}
 				}
 			}
-
+					   
 			//----------最長の辺の中点を節点に追加----------
 			Node* tmp = new Node((*pnode0 + *pnode1) / 2.0);
 			tmp->type = 2;
