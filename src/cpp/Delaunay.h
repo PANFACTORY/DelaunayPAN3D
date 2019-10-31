@@ -8,8 +8,6 @@
 
 #pragma once
 #define _USE_MATH_DEFINES
-
-
 #include <math.h>
 #include <iostream>
 #include <vector>
@@ -21,13 +19,13 @@
 #include "Element.h"
 
 
-namespace Delaunay3D {
-	//**********‰¼‘zl–Ê‘Ì‚Ì¶¬**********
-	void MakeSupertetrahedran(std::vector<Node*> &_nlist, std::vector<Element*> &_elist) {
+namespace DelaunayPAN3DV3{
+	template<class T>
+	void MakeSupertetrahedran(std::vector<Node<T>*> &_nlist, std::vector<Element<T>*> &_elist) {
 		std::cout << "Make supertetraedron\n";
 				
-		//----------ß“_‚Ì‘¶İ”ÍˆÍ‚ğ‹‚ß‚é----------
-		double xmax = 0.0, xmin = 0.0, ymax = 0.0, ymin = 0.0, zmax = 0.0, zmin = 0.0;
+		//----------ï¿½ß“_ï¿½Ì‘ï¿½ï¿½İ”ÍˆÍ‚ï¿½ï¿½ï¿½ï¿½ß‚ï¿½----------
+		T xmax = 0.0, xmin = 0.0, ymax = 0.0, ymin = 0.0, zmax = 0.0, zmin = 0.0;
 		for (auto pnode : _nlist) {
 			if (pnode->x > xmax) { xmax = pnode->x; }
 			if (pnode->x < xmin) { xmin = pnode->x; }
@@ -37,9 +35,9 @@ namespace Delaunay3D {
 			if (pnode->z < zmin) { zmin = pnode->z; }
 		}
 
-		//----------À•W‚Ì³‹K‰»----------
-		double xrange = 0.5*(xmax - xmin), yrange = 0.5*(ymax - ymin), zrange = 0.5*(zmax - zmin);
-		double dmax = xrange;
+		//----------ï¿½ï¿½ï¿½Wï¿½Ìï¿½ï¿½Kï¿½ï¿½----------
+		T xrange = 0.5*(xmax - xmin), yrange = 0.5*(ymax - ymin), zrange = 0.5*(zmax - zmin);
+		T dmax = xrange;
 		if (dmax < yrange) {	dmax = yrange;	}
 		if (dmax < zrange) {	dmax = zrange;	}
 		for (auto& pnode : _nlist) {
@@ -48,33 +46,33 @@ namespace Delaunay3D {
 			pnode->z = (pnode->z - zmin) / dmax + 0.5*(ALPHA - 1.0)*zrange / dmax;
 		}
 
-		//----------‰¼‘zl–Ê‘Ìß“_‚Ì¶¬----------
-		Node* nst0 = new Node(0.0, 0.0, 0.0, -1, _nlist.size());
+		//----------ï¿½ï¿½ï¿½zï¿½lï¿½Ê‘Ìß“_ï¿½Ìï¿½ï¿½ï¿½----------
+		Node<T>* nst0 = new Node<T>(0.0, 0.0, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst0);
-		Node* nst1 = new Node(ALPHA*xrange / dmax, 0.0, 0.0, -1, _nlist.size());
+		Node<T>* nst1 = new Node<T>(ALPHA*xrange / dmax, 0.0, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst1);
-		Node* nst2 = new Node(ALPHA*xrange / dmax, ALPHA*yrange / dmax, 0.0, -1, _nlist.size());
+		Node<T>* nst2 = new Node<T>(ALPHA*xrange / dmax, ALPHA*yrange / dmax, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst2);
-		Node* nst3 = new Node(0.0, ALPHA*yrange / dmax, 0.0, -1, _nlist.size());
+		Node<T>* nst3 = new Node<T>(0.0, ALPHA*yrange / dmax, 0.0, -1, _nlist.size());
 		_nlist.push_back(nst3);
-		Node* nst4 = new Node(0.0, 0.0, ALPHA*zrange / dmax, -1, _nlist.size());
+		Node<T>* nst4 = new Node<T>(0.0, 0.0, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst4);
-		Node* nst5 = new Node(ALPHA*xrange / dmax, 0.0, ALPHA*zrange / dmax, -1, _nlist.size());
+		Node<T>* nst5 = new Node<T>(ALPHA*xrange / dmax, 0.0, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst5);
-		Node* nst6 = new Node(ALPHA*xrange / dmax, ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _nlist.size());
+		Node<T>* nst6 = new Node<T>(ALPHA*xrange / dmax, ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst6);
-		Node* nst7 = new Node(0.0, ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _nlist.size());
+		Node<T>* nst7 = new Node<T>(0.0, ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _nlist.size());
 		_nlist.push_back(nst7);
 		
-		//----------‰¼‘zl–Ê‘ÌŒQ‚Ì¶¬----------
-		_elist.push_back(new Element(nst1, nst3, nst0, nst7));
-		_elist.push_back(new Element(nst2, nst1, nst6, nst7));
-		_elist.push_back(new Element(nst2, nst3, nst1, nst7));
-		_elist.push_back(new Element(nst1, nst5, nst6, nst7));
-		_elist.push_back(new Element(nst1, nst0, nst5, nst7));
-		_elist.push_back(new Element(nst4, nst5, nst0, nst7));
+		//----------ï¿½ï¿½ï¿½zï¿½lï¿½Ê‘ÌŒQï¿½Ìï¿½ï¿½ï¿½----------
+		_elist.push_back(new Element<T>(nst1, nst3, nst0, nst7));
+		_elist.push_back(new Element<T>(nst2, nst1, nst6, nst7));
+		_elist.push_back(new Element<T>(nst2, nst3, nst1, nst7));
+		_elist.push_back(new Element<T>(nst1, nst5, nst6, nst7));
+		_elist.push_back(new Element<T>(nst1, nst0, nst5, nst7));
+		_elist.push_back(new Element<T>(nst4, nst5, nst0, nst7));
 
-		//----------—v‘f“¯m‚Ì—×ÚŠÖŒW‚ğŒvZ----------
+		//----------ï¿½vï¿½fï¿½ï¿½ï¿½mï¿½Ì—×ÚŠÖŒWï¿½ï¿½ï¿½vï¿½Z----------
 		for (auto& pelement : _elist) {
 			for (auto& psurface : pelement->psurfaces) {
 				if (psurface->pneighbor == nullptr) {
@@ -93,15 +91,15 @@ namespace Delaunay3D {
 	}
 
 
-	//**********‹ÇŠDelaunay•ªŠ„**********
-	void MeshLocal(Node *_node, Element *_pethis, std::vector<Element*> &_elist) {
-		std::vector<Element*> stack, substack;
-		std::vector<Surface*> sstack;
+	template<class T>
+	void MeshLocal(Node<T> *_node, Element<T>* _pethis, std::vector<Element<T>*>& _elist) {
+		std::vector<Element<T>*> stack, substack;
+		std::vector<Surface<T>*> sstack;
 
-		//----------’Ç‰Á‚µ‚½“_‚ğŠOÚ‹…“à‚É‚Â—v‘f‚ğW‚ß‚é----------
+		//----------ï¿½Ç‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½Oï¿½Ú‹ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½Â—vï¿½fï¿½ï¿½ï¿½Wï¿½ß‚ï¿½----------
 		substack.push_back(_pethis);
 		while (substack.size()) {
-			Element* pend = *(substack.end() - 1);				//ƒTƒuƒXƒ^ƒbƒN––”ö‚Ì—v‘f‚ğw‚·ƒ|ƒCƒ“ƒ^
+			Element<T>* pend = *(substack.end() - 1);			
 			substack.pop_back();
 
 			if (pend->IsActive) {
@@ -109,7 +107,7 @@ namespace Delaunay3D {
 				pend->IsActive = false;
 
 				for (auto& psurface : pend->psurfaces) {
-					Element* pneighbor = psurface->pneighbor;
+					Element<T>* pneighbor = psurface->pneighbor;
 					if (pneighbor != nullptr && pneighbor->IsInSphere(_node)) {
 						substack.push_back(pneighbor);
 					}
@@ -120,30 +118,29 @@ namespace Delaunay3D {
 			}
 		}
 
-		//----------‘½–Ê‘Ì‚Ì‰š•”‚ğ–„‚ß‚é----------
-		//uV‚µ‚­’Ç‰Á‚Å‚«‚é—v‘f‚ª–³‚¢ê‡v‚Ì•”•ª‚ğŒo—R‚µ‚½‚Æ‚«ƒoƒO‚ª”­¶
+		//----------ï¿½ï¿½ï¿½Ê‘Ì‚Ì‰ï¿½ï¿½ï¿½ï¿½ğ–„‚ß‚ï¿½----------
 		bool is_anysurface_invalid = true;
 		while (is_anysurface_invalid) {
 			is_anysurface_invalid = false;
 
 			for (int i = 0; i < sstack.size(); i++) {
 				if (sstack[i]->IsActive) {
-					Element D = Element(sstack[i]->pnodes[0], sstack[i]->pnodes[1], sstack[i]->pnodes[2], _node);
+					Element<T> D = Element<T>(sstack[i]->pnodes[0], sstack[i]->pnodes[1], sstack[i]->pnodes[2], _node);
 					
-					//----------•s—Ç‚È–Ê‚ª‚ ‚éê‡----------
+					//----------ï¿½sï¿½Ç‚È–Ê‚ï¿½ï¿½ï¿½ï¿½ï¿½ê‡----------
 					if (D.volume < EPS) {
-						Element* peadd = sstack[i]->pneighbor;			//•s—Ç‚È–Ê‚É—×Ú‚·‚é—v‘f‚ğw‚·ƒ|ƒCƒ“ƒ^
+						Element<T>* peadd = sstack[i]->pneighbor;		
 
-						//----------V‚µ‚­’Ç‰Á‚Å‚«‚é—v‘f‚ª‚ ‚éê‡----------
+						//----------ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ç‰ï¿½ï¿½Å‚ï¿½ï¿½ï¿½vï¿½fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡----------
 						if (peadd != nullptr) {
 							if (peadd->IsActive) {
 								is_anysurface_invalid = true;
 								peadd->IsActive = false;
 								stack.push_back(peadd);
 								
-								//----------’Ç‰Á‚µ‚½—v‘f‚ÌŠe–Ê‚É‚Â‚¢‚Ä‹¤—L–Ê‚ğFalse‚É----------
+								//----------ï¿½Ç‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½fï¿½ÌŠeï¿½Ê‚É‚Â‚ï¿½ï¿½Ä‹ï¿½ï¿½Lï¿½Ê‚ï¿½Falseï¿½ï¿½----------
 								for (auto& psurface : peadd->psurfaces) {
-									Element* pneighbor = psurface->pneighbor;
+									Element<T>* pneighbor = psurface->pneighbor;
 									if (pneighbor != nullptr && !pneighbor->IsActive) {
 										pneighbor->GetAdjacentSurface(peadd)->IsActive = false;
 									}
@@ -155,7 +152,7 @@ namespace Delaunay3D {
 							}
 						}
 
-						//----------V‚µ‚­’Ç‰Á‚Å‚«‚é—v‘f‚ª–³‚¢ê‡----------
+						//----------ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ç‰ï¿½ï¿½Å‚ï¿½ï¿½ï¿½vï¿½fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡----------
 						else if (fabs(D.volume) < EPS) {
 							sstack[i]->IsActive = false;
 						}
@@ -164,11 +161,11 @@ namespace Delaunay3D {
 			}
 		}
 
-		//----------V‚µ‚¢—v‘f‚ğ¶¬----------
-		std::vector<Element*> penew;				//V‚µ‚­¶¬‚³‚ê‚é—v‘f‚ğw‚·ƒ|ƒCƒ“ƒ^‚ÌƒXƒ^ƒbƒN
+		//----------ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½vï¿½fï¿½ğ¶ï¿½----------
+		std::vector<Element<T>*> penew;			
 		for (auto& psurface : sstack) {
 			if (psurface->IsActive) {
-				Element* tmp = new Element(psurface->pnodes[0], psurface->pnodes[1], psurface->pnodes[2], _node);
+				Element<T>* tmp = new Element<T>(psurface->pnodes[0], psurface->pnodes[1], psurface->pnodes[2], _node);
 				tmp->psurfaces[3]->pneighbor = psurface->pneighbor;
 				if (psurface->pneighbor != nullptr) {
 					psurface->pneighbor->GetAdjacentSurface(psurface->pparent)->pneighbor = tmp;
@@ -178,8 +175,7 @@ namespace Delaunay3D {
 			}
 		}
 
-		//----------V‚µ‚­¶¬‚³‚ê‚½—v‘f“¯m‚Ì—×ÚŠÖŒW‚ğŒvZ----------
-		//G•½—v‘f‚ğŒŸo‚µ‚½‚Æ‚«‚É©ŒÈC³‚Å‚«‚é‚Ì‚ªƒxƒXƒg
+		//----------ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½vï¿½fï¿½ï¿½ï¿½mï¿½Ì—×ÚŠÖŒWï¿½ï¿½ï¿½vï¿½Z----------
 		for (auto& pelement : penew) {
 			for (auto& psurface : pelement->psurfaces) {
 				OUT:
@@ -188,7 +184,7 @@ namespace Delaunay3D {
 						for (auto& psurface2 : pelement2->psurfaces) {
 							if (*psurface == *psurface2) {
 
-								//----------G•½—v‘f‚ªŒŸo‚³‚ê‚½‚Æ‚«----------
+								//----------ï¿½Gï¿½ï¿½ï¿½vï¿½fï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½----------
 								if (psurface2->pneighbor != nullptr) {
 									std::cout << "!!";
 								}
@@ -203,7 +199,7 @@ namespace Delaunay3D {
 			}
 		}
 
-		//----------stack“à‚ÌŒÃ‚¢—v‘f‚ğíœ----------
+		//----------stackï¿½ï¿½ï¿½ÌŒÃ‚ï¿½ï¿½vï¿½fï¿½ï¿½ï¿½íœ----------
 		for (auto pelement = _elist.begin(); pelement != _elist.end(); ) {
 			if (!(*pelement)->IsActive) {
 				delete *pelement;
@@ -216,24 +212,24 @@ namespace Delaunay3D {
 	}
 
 
-	//**********‘e‚¢Delaunay•ªŠ„**********
-	void MakeRoughMesh(std::vector<Node*> _nlist, std::vector<Element*> &_elist) {
+	template<class T>
+	void MakeRoughMesh(std::vector<Node<T>*> _nlist, std::vector<Element<T>*> &_elist) {
 		std::cout << "Make rough mesh\n";
 
-		Element* pethis = _elist[0];										//Œ»İ’²‚×‚Ä‚¢‚é—v‘f‚ğw‚·ƒ|ƒCƒ“ƒ^
+		Element<T>* pethis = _elist[0];									
 		for (auto& pnode : _nlist) {
 			if (pnode->type != -1) {
 				int count = 0;
 				while (1) {
-					Element* penext = pethis->GetLocateId(pnode);				//Ÿ‚É’²‚×‚é—v‘f‚ğw‚·ƒ|ƒCƒ“ƒ^
-					//----------—v‘f“à‚É“_‚ª‚ ‚é‚Æ‚«----------
+					Element<T>* penext = pethis->GetLocateId(pnode);				
+					//----------ï¿½vï¿½fï¿½ï¿½ï¿½É“_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½----------
 					if (penext == pethis) {
 						//std::cout << "\tat\t" << pethis << "\n";
 						MeshLocal(pnode, pethis, _elist);
 						pethis = *(_elist.end() - 1);
 						break;
 					}
-					//----------‚È‚¢‚Æ‚«----------
+					//----------ï¿½È‚ï¿½ï¿½Æ‚ï¿½----------
 					else {
 						pethis = penext;
 					}
@@ -243,8 +239,8 @@ namespace Delaunay3D {
 	}
 
 
-	//**********‰¼‘zl–Ê‘Ì‚Ìíœ**********
-	void DeleteSupertetrahedran(std::vector<Element*> &_elist) {
+	template<class T>
+	void DeleteSupertetrahedran(std::vector<Element<T>*> &_elist) {
 		std::cout << "Delete supertetraedron\n";
 		
 		for (auto pelement = _elist.begin(); pelement != _elist.end(); ) {
@@ -267,8 +263,8 @@ namespace Delaunay3D {
 	}
 
 
-	//**********‰š•”—v‘f‚Ìíœ**********
-	void DeleteCreviceElement(std::vector<Element*> &_elist) {
+	template<class T>
+	void DeleteCreviceElement(std::vector<Element<T>*> &_elist) {
 		std::cout << "Delete Crevice Element\n";
 
 		for (auto pelement = _elist.begin(); pelement != _elist.end(); ) {
@@ -290,21 +286,21 @@ namespace Delaunay3D {
 	}
 
 
-	//**********×‚©‚¢Delaunay•ªŠ„**********
-	void MakeFineMesh(std::vector<Node*> &_nlist, std::vector<Element*> &_elist) {
+	template<class T>
+	void MakeFineMesh(std::vector<Node<T>*> &_nlist, std::vector<Element<T>*> &_elist) {
 		std::cout << "Make fine mesh\n";
 		
 		for (int i = 0; i < ADDNODE; i++) {
-			//----------Å’·‚Ì•Ó‚ğ’Tõ----------
-			double edgelengthmax = 0.0;
-			Element* pethis = nullptr;
-			Node* pnode0 = nullptr;
-			Node* pnode1 = nullptr;
+			//----------ï¿½Å’ï¿½ï¿½Ì•Ó‚ï¿½Tï¿½ï¿½----------
+			T edgelengthmax = 0.0;
+			Element<T>* pethis = nullptr;
+			Node<T>* pnode0 = nullptr;
+			Node<T>* pnode1 = nullptr;
 					   
 			for (auto pelement : _elist) {
 				for (int j = 0; j < 3; j++) {
 					for (int k = j + 1; k < 3; k++) {
-						double edgelength = (*pelement->pnodes[k] - *pelement->pnodes[j]).Size();
+						T edgelength = (*pelement->pnodes[k] - *pelement->pnodes[j]).Norm();
 						if (edgelength > edgelengthmax) {
 							edgelengthmax = edgelength;
 							pethis = pelement;
@@ -315,8 +311,8 @@ namespace Delaunay3D {
 				}
 			}
 					   
-			//----------Å’·‚Ì•Ó‚Ì’†“_‚ğß“_‚É’Ç‰Á----------
-			Node* tmp = new Node((*pnode0 + *pnode1) / 2.0);
+			//----------ï¿½Å’ï¿½ï¿½Ì•Ó‚Ì’ï¿½ï¿½_ï¿½ï¿½ß“_ï¿½É’Ç‰ï¿½----------
+			Node<T>* tmp = new Node<T>((*pnode0 + *pnode1) / 2.0);
 			tmp->type = 2;
 			tmp->id = _nlist.size();
 			_nlist.push_back(tmp);
