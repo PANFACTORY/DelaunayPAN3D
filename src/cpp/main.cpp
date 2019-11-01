@@ -1,5 +1,5 @@
 //*********************************************************
-//Title		:Delaunay3Dver3
+//Title		:src/cpp/main.cpp
 //Author	:Tanabe Yuta
 //Date		:2019/01/26
 //Copyright	:(C)2019 TanabeYuta
@@ -12,7 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
-#include <time.h>
+#include <chrono>
 
 
 #include "Delaunay.h"
@@ -22,8 +22,10 @@
 using namespace DelaunayPAN3DV3;
 
 
-//**********節点の取り込み**********
-bool importnode(std::vector<Node<double>*> &_nlist, std::string _fname, int _type) {
+//*****************************************************************************
+//	Import nodes
+//*****************************************************************************
+bool importnode(std::vector<Node<double>*>& _pnodes, std::string _fname, int _type) {
 	std::ifstream fin(_fname);
 	if (!fin) {
 		std::cout << "Node File Open Error : " << _fname << "\n";
@@ -37,14 +39,14 @@ bool importnode(std::vector<Node<double>*> &_nlist, std::string _fname, int _typ
 		ssi >> tmpx[0] >> tmpx[1] >> tmpx[2];
 		
 		bool is_same_node = false;
-		for (auto pnode : _nlist) {
+		for (auto pnode : _pnodes) {
 			if (Node<double>(stod(tmpx[0]), stod(tmpx[1]), stod(tmpx[2]), -1, -1) == *pnode) {
 				is_same_node = true;
 				break;
 			}
 		}
 		if (!is_same_node) {
-			_nlist.push_back(new Node<double>(stod(tmpx[0]), stod(tmpx[1]), stod(tmpx[2]), _type, _nlist.size()));
+			_pnodes.push_back(new Node<double>(stod(tmpx[0]), stod(tmpx[1]), stod(tmpx[2]), _type, _pnodes.size()));
 		}
 	}
 	fin.close();
@@ -52,21 +54,23 @@ bool importnode(std::vector<Node<double>*> &_nlist, std::string _fname, int _typ
 }
 
 
-//**********要素をVTKファイルに書き出す**********
-void exportvtk(std::vector<Node<double>*> _nlist, std::vector<Element<double>*> _elist, std::string _fname) {
+//*****************************************************************************
+//	Export to VTK
+//*****************************************************************************
+void exportvtk(std::vector<Node<double>*> _pnodes, std::vector<Element<double>*> _pelements, std::string _fname) {
 	std::ofstream fout(_fname + ".vtk");
 
 	fout << "# vtk DataFile Version 4.1\n" << _fname << "\nASCII\nDATASET UNSTRUCTURED_GRID\n";
-	fout << "POINTS\t" << _nlist.size() << "\tfloat\n";
-	for (auto pnode : _nlist) {
+	fout << "POINTS\t" << _pnodes.size() << "\tfloat\n";
+	for (auto pnode : _pnodes) {
 		fout << pnode->x << "\t" << pnode->y << "\t" << pnode->z << "\n";
 	}
-	fout << "CELLS\t" << _elist.size() << "\t" << _elist.size() * 5 << "\n";
-	for (auto pelement : _elist) {
+	fout << "CELLS\t" << _pelements.size() << "\t" << _pelements.size() * 5 << "\n";
+	for (auto pelement : _pelements) {
 		fout << "4\t" << pelement->pnodes[0]->id << "\t" << pelement->pnodes[1]->id << "\t" << pelement->pnodes[2]->id << "\t" << pelement->pnodes[3]->id << "\n";
 	}
-	fout << "CELL_TYPES\t" << _elist.size() << "\n";
-	for (int i = 0; i < _elist.size(); i++) {
+	fout << "CELL_TYPES\t" << _pelements.size() << "\n";
+	for (int i = 0; i < _pelements.size(); i++) {
 		fout << "10\n";
 	}
 
@@ -74,42 +78,47 @@ void exportvtk(std::vector<Node<double>*> _nlist, std::vector<Element<double>*> 
 }
 
 
-//**********メイン処理**********
+//*****************************************************************************
+//	main
+//*****************************************************************************
 int main() {
+	std::string filepath = "sample/Model5";
+
 	std::cout << "**********Delaunay trianguration**********\n";
 
-	//----------節点と要素のリスト----------
-	std::vector<Node<double>*> nlist;
-	std::vector<Element<double>*> elist;
+	//----------List of nodes and elements----------
+	std::vector<Node<double>*> pnodes;
+	std::vector<Element<double>*> pelements;
 	
-	//----------節点の取り込み----------
-	if (!importnode(nlist, MODELNAME + (std::string)"/node.dat", 0)) {	return -1;	}
-	bool IsCopynodeExist = importnode(nlist, MODELNAME + (std::string)"/copynode.dat", 1);
+	//----------Import nodes----------
+	if (!importnode(pnodes, filepath + "/node.dat", 0)) {	return -1;	}
+	bool IsCopynodeExist = importnode(pnodes, filepath + "/copynode.dat", 1);
 
-	//----------Delaunay三角形分割を実行----------
-	clock_t ts = clock();
-	MakeSupertetrahedran<double>(nlist, elist);
-	MakeRoughMesh<double>(nlist, elist);
-	DeleteSupertetrahedran<double>(elist);
+	//----------Make mesh----------
+	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	MakeSupertetrahedron<double>(pnodes, pelements);
+	MakeRoughMesh<double>(pnodes, pelements);
+	DeleteSupertetrahedron<double>(pelements);
 	if (IsCopynodeExist) {
-		DeleteCreviceElement<double>(elist);
+		DeleteCreviceElement<double>(pelements);
 	}
-	MakeFineMesh<double>(nlist, elist);
-	clock_t te = clock();
+	MakeFineMesh<double>(pnodes, pelements, 10000);
+	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 	
-	//----------分割結果の出力----------
-	std::cout << "**********The Result↓**********\n";
-	std::cout << "time cost:\t" << (double)(te - ts) / CLOCKS_PER_SEC << "sec.\n";
-	std::cout << "node:     \t" << nlist.size() << "\n";
-	std::cout << "element:  \t" << elist.size() << "\n";
-	std::cout << "Export to:\t" << MODELNAME << "/mesh.vtk\n";
-	exportvtk(nlist, elist, MODELNAME + (std::string)"/mesh");
+	//----------Export results----------
+	std::cout << "**********The Result**********\n";
+	std::cout << "time cost:\t" << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() / 1000.0 << "sec.\n";
+	std::cout << "node:     \t" << pnodes.size() << "\n";
+	std::cout << "element:  \t" << pelements.size() << "\n";
+	std::cout << "Export to:\t" << filepath << "/mesh.vtk\n";
+	std::cout << "******************************\n";
+	exportvtk(pnodes, pelements, filepath + "/mesh");
 
-	//----------メモリ開放----------
-	for (auto pelement : elist) {	delete pelement;	}
-	elist.clear();
-	for (auto pnode : nlist) {	delete pnode;	}
-	nlist.clear();
+	//----------Release memory----------
+	for (auto pelement : pelements) {	delete pelement;	}
+	pelements.clear();
+	for (auto pnode : pnodes) {	delete pnode;	}
+	pnodes.clear();
 	
 	return 0;
 }

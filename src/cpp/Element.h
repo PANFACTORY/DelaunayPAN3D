@@ -1,5 +1,5 @@
 //*********************************************************
-//Title		:Element.h
+//Title		:src/cpp/Element.h
 //Author	:Tanabe Yuta
 //Date		:2019/01/26
 //Copyright	:(C)2019 TanabeYuta
@@ -61,22 +61,22 @@ public:
 
 
 	template<class T>
-	Element<T>::Element(Node<T> *_pnode0, Node<T> *_pnode1, Node<T> *_pnode2, Node<T> *_pnode3){
+	Element<T>::Element(Node<T>* _pnode0, Node<T>* _pnode1, Node<T>* _pnode2, Node<T>* _pnode3){
 		this->IsActive = true;
 
-		//----------���_��ݒ�----------
+		//----------Set nodes----------
 		this->pnodes[0] = _pnode0;	
 		this->pnodes[1] = _pnode1;	
 		this->pnodes[2] = _pnode2;	
 		this->pnodes[3] = _pnode3;
 
-		//----------�e�ʂ�ݒ�----------
+		//----------Set surfaces----------
 		this->psurfaces[0] = new Surface<T>(_pnode1, _pnode3, _pnode2, this, nullptr);
 		this->psurfaces[1] = new Surface<T>(_pnode0, _pnode2, _pnode3, this, nullptr);
 		this->psurfaces[2] = new Surface<T>(_pnode0, _pnode3, _pnode1, this, nullptr);
 		this->psurfaces[3] = new Surface<T>(_pnode0, _pnode1, _pnode2, this, nullptr);
 
-		//----------�O�ڋ��̒��S���W�Ɣ��a���v�Z----------
+		//----------Get center and radius of external sphere----------
 		Node<T> v0 = *_pnode1 - *_pnode0;
 		Node<T> v1 = *_pnode2 - *_pnode0;
 		Node<T> v2 = *_pnode3 - *_pnode0;
@@ -89,26 +89,25 @@ public:
 		Node<T> P2 = v0 * v1;
 
 		this->scenter = Node<T>((ABC.x * P0.x + ABC.y * P1.x + ABC.z * P2.x) / detP, (ABC.x * P0.y + ABC.y * P1.y + ABC.z * P2.y) / detP, (ABC.x * P0.z + ABC.y * P1.z + ABC.z * P2.z) / detP, -1, -1);
-
 		this->sround = (this->scenter - *_pnode0).Norm();
 
-		//----------�d�S���W�̌v�Z----------
+		//----------Get center of gravity----------
 		this->gcenter = (*_pnode0 + *_pnode1 + *_pnode2 + *_pnode3) / 4.0;
 
-		//----------�̐ς��v�Z----------
+		//----------Get volume----------
 		this->volume = ((*_pnode1 - *_pnode0) * (*_pnode2 - *_pnode0)) ^ (*_pnode3 - *_pnode0);
 		
-		//----------�A�X�y�N�g����v�Z----------
+		//----------Get aspect ratio----------
 		this->aspect = this->volume / pow(this->sround, 3.0) / ARTETRAHEDRON;
 		if (fetestexcept(FE_DIVBYZERO)) {
 			feclearexcept(FE_ALL_EXCEPT);
-			this->aspect = 0.0;
+			this->aspect = T();
 		}
 	}
 
 
 	template<class T>
-	Element<T>* Element<T>::GetLocateId(Node<T> *_pnode){
+	Element<T>* Element<T>::GetLocateId(Node<T>* _pnode){
 		for (auto surface : this->psurfaces) {
 			if (surface->IsRayCross(this->gcenter, this->gcenter - *_pnode)) {
 				return surface->pneighbor;
@@ -119,7 +118,7 @@ public:
 
 
 	template<class T>
-	bool Element<T>::IsInSphere(Node<T> *_pnode){
+	bool Element<T>::IsInSphere(Node<T>* _pnode){
 		if (sround + EPS > (this->scenter - *_pnode).Norm()) {
 			return true;
 		}
