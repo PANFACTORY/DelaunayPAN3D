@@ -19,7 +19,7 @@
 #include "Element.h"
 
 
-namespace DelaunayPAN3DV3{
+namespace DelaunayPAN3D {
 	//*************************************************************************
 	//	Make supertetrahedron
 	//*************************************************************************

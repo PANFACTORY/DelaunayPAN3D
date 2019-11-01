@@ -19,7 +19,7 @@
 #include "Parameter.h"
 
 
-using namespace DelaunayPAN3DV3;
+using namespace DelaunayPAN3D;
 
 
 //*****************************************************************************

@@ -18,7 +18,7 @@
 #include "Parameter.h"
 
 
-namespace DelaunayPAN3DV3{
+namespace DelaunayPAN3D {
 	template<class T>
 	class Surface;
 
