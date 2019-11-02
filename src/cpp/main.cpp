@@ -96,13 +96,9 @@ int main() {
 
 	//----------Make mesh----------
 	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-	MakeSupertetrahedron<double>(pnodes, pelements);
-	MakeRoughMesh<double>(pnodes, pelements);
-	DeleteSupertetrahedron<double>(pelements);
-	if (IsCopynodeExist) {
-		DeleteCreviceElement<double>(pelements);
-	}
-	MakeFineMesh<double>(pnodes, pelements, 10000);
+	
+	MakeMesh<double>(pnodes, pelements, 10000, IsCopynodeExist);
+	
 	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 	
 	//----------Export results----------

@@ -21,12 +21,10 @@
 
 namespace DelaunayPAN3D {
 	//*************************************************************************
-	//	Make supertetrahedron
+	//	Make Mesh
 	//*************************************************************************
 	template<class T>
-	void MakeSupertetrahedron(std::vector<Node<T>*>& _pnodes, std::vector<Element<T>*>& _pelements) {
-		std::cout << "Make supertetraedron\n";
-				
+	void MakeMesh(std::vector<Node<T>*>& _pnodes, std::vector<Element<T>*>& _pelements, int _addnodenum, bool _iscopynodeexist){
 		//----------Get region which nodes exist----------
 		T xmax = T(), xmin = T(), ymax = T(), ymin = T(), zmax = T(), zmin = T();
 		for (auto pnode : _pnodes) {
@@ -49,22 +47,49 @@ namespace DelaunayPAN3D {
 			pnode->z = (pnode->z - zmin) / dmax + 0.5*(ALPHA - 1.0)*zrange / dmax;
 		}
 
+		//----------Make supertetrahedron----------
+		T x = ALPHA*xrange / dmax, y = ALPHA*yrange / dmax, z = ALPHA*zrange / dmax;
+		MakeSupertetrahedron(_pnodes, _pelements, x, y, z);
+
+		//----------Make rough mesh----------
+		MakeRoughMesh(_pnodes, _pelements);
+
+		//----------Delete needless elements----------
+		DeleteSupertetrahedron(_pelements);
+		if (_iscopynodeexist) {
+			DeleteCreviceElement(_pelements);
+		}
+
+		//----------Make fine mesh----------
+		MakeFineMesh(_pnodes, _pelements, _addnodenum);
+
+		//----------Renormalize cordinate----------
+	}
+
+
+	//*************************************************************************
+	//	Make supertetrahedron
+	//*************************************************************************
+	template<class T>
+	void MakeSupertetrahedron(std::vector<Node<T>*>& _pnodes, std::vector<Element<T>*>& _pelements, T _xmax, T _ymax, T _zmax) {
+		std::cout << "Make supertetraedron\n";
+
 		//----------Make nodes of supertetrahedron----------
 		Node<T>* nst0 = new Node<T>(T(), T(), T(), -1, _pnodes.size());
 		_pnodes.push_back(nst0);
-		Node<T>* nst1 = new Node<T>(ALPHA*xrange / dmax, T(), T(), -1, _pnodes.size());
+		Node<T>* nst1 = new Node<T>(_xmax, T(), T(), -1, _pnodes.size());
 		_pnodes.push_back(nst1);
-		Node<T>* nst2 = new Node<T>(ALPHA*xrange / dmax, ALPHA*yrange / dmax, T(), -1, _pnodes.size());
+		Node<T>* nst2 = new Node<T>(_xmax, _ymax, T(), -1, _pnodes.size());
 		_pnodes.push_back(nst2);
-		Node<T>* nst3 = new Node<T>(T(), ALPHA*yrange / dmax, T(), -1, _pnodes.size());
+		Node<T>* nst3 = new Node<T>(T(), _ymax, T(), -1, _pnodes.size());
 		_pnodes.push_back(nst3);
-		Node<T>* nst4 = new Node<T>(T(), T(), ALPHA*zrange / dmax, -1, _pnodes.size());
+		Node<T>* nst4 = new Node<T>(T(), T(), _zmax, -1, _pnodes.size());
 		_pnodes.push_back(nst4);
-		Node<T>* nst5 = new Node<T>(ALPHA*xrange / dmax, T(), ALPHA*zrange / dmax, -1, _pnodes.size());
+		Node<T>* nst5 = new Node<T>(_xmax, T(), _zmax, -1, _pnodes.size());
 		_pnodes.push_back(nst5);
-		Node<T>* nst6 = new Node<T>(ALPHA*xrange / dmax, ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _pnodes.size());
+		Node<T>* nst6 = new Node<T>(_xmax, _ymax, _zmax, -1, _pnodes.size());
 		_pnodes.push_back(nst6);
-		Node<T>* nst7 = new Node<T>(T(), ALPHA*yrange / dmax, ALPHA*zrange / dmax, -1, _pnodes.size());
+		Node<T>* nst7 = new Node<T>(T(), _ymax, _zmax, -1, _pnodes.size());
 		_pnodes.push_back(nst7);
 		
 		//----------Make elements of supertetrahedron----------
