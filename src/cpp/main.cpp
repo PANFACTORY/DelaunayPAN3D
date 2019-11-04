@@ -97,7 +97,7 @@ int main() {
 	//----------Make mesh----------
 	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
 	
-	MakeMesh<double>(pnodes, pelements, 10000, IsCopynodeExist);
+	MakeMesh<double>(pnodes, pelements, 50000, IsCopynodeExist);
 	
 	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 	

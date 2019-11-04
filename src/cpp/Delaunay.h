@@ -64,6 +64,11 @@ namespace DelaunayPAN3D {
 		MakeFineMesh(_pnodes, _pelements, _addnodenum);
 
 		//----------Renormalize cordinate----------
+		for (auto& pnode : _pnodes) {
+			pnode->x = pnode->x * dmax - 0.5*(ALPHA - 1.0)*xrange + xmin;
+			pnode->y = pnode->y * dmax - 0.5*(ALPHA - 1.0)*yrange + ymin;
+			pnode->z = pnode->z * dmax - 0.5*(ALPHA - 1.0)*zrange + zmin;
+		}
 	}
 
 
