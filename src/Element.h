@@ -11,128 +11,102 @@
 #include <array>
 #include <cmath>
 
-#include "Element.h"
-#include "Node.h"
 #include "Surface.h"
 
 namespace DelaunayPAN3D {
-template <class T>
+template <class N, class T>
 class Surface;
 
-template <class T>
+template <class N, class T>
 class Element {
    public:
-    Element();
-    ~Element();
-    Element(Node<T>*, Node<T>*, Node<T>*, Node<T>*);
+    Element() {}
+    ~Element() {
+        for (auto& psurface : this->psurfaces) {
+            delete psurface;
+        }
+    }
+    Element(N* _pnode0, N* _pnode1, N* _pnode2, N* _pnode3) {
+        this->IsActive = true;
+
+        //----------Set nodes----------
+        this->pnodes[0] = _pnode0;
+        this->pnodes[1] = _pnode1;
+        this->pnodes[2] = _pnode2;
+        this->pnodes[3] = _pnode3;
+
+        //----------Set surfaces----------
+        this->psurfaces[0] =
+            new Surface<N, T>(_pnode1, _pnode3, _pnode2, this, nullptr);
+        this->psurfaces[1] =
+            new Surface<N, T>(_pnode0, _pnode2, _pnode3, this, nullptr);
+        this->psurfaces[2] =
+            new Surface<N, T>(_pnode0, _pnode3, _pnode1, this, nullptr);
+        this->psurfaces[3] =
+            new Surface<N, T>(_pnode0, _pnode1, _pnode2, this, nullptr);
+
+        //----------Get center and radius of external sphere----------
+        N v0 = *_pnode1 - *_pnode0;
+        N v1 = *_pnode2 - *_pnode0;
+        N v2 = *_pnode3 - *_pnode0;
+
+        N ABC = N(0.5 * ((*_pnode1).dot(*_pnode1) - (*_pnode0).dot(*_pnode0)),
+                  0.5 * ((*_pnode2).dot(*_pnode2) - (*_pnode0).dot(*_pnode0)),
+                  0.5 * ((*_pnode3).dot(*_pnode3) - (*_pnode0).dot(*_pnode0)),
+                  -1, -1);
+
+        T detP = v0.dot(v1.cross(v2));
+        N P0 = v1.cross(v2);
+        N P1 = v2.cross(v0);
+        N P2 = v0.cross(v1);
+
+        this->scenter =
+            N((ABC.x * P0.x + ABC.y * P1.x + ABC.z * P2.x) / detP,
+              (ABC.x * P0.y + ABC.y * P1.y + ABC.z * P2.y) / detP,
+              (ABC.x * P0.z + ABC.y * P1.z + ABC.z * P2.z) / detP, -1, -1);
+        this->sround = (this->scenter - *_pnode0).norm();
+
+        //----------Get center of gravity----------
+        this->gcenter = (*_pnode0 + *_pnode1 + *_pnode2 + *_pnode3) / 4.0;
+
+        //----------Get volume----------
+        this->volume = ((*_pnode1 - *_pnode0).cross(*_pnode2 - *_pnode0))
+                           .dot(*_pnode3 - *_pnode0);
+
+        //----------Get aspect ratio----------
+        this->aspect =
+            this->volume / pow(this->sround, 3.0) / (8.0 * sqrt(3.0) / 27.0);
+        if (fetestexcept(FE_DIVBYZERO)) {
+            feclearexcept(FE_ALL_EXCEPT);
+            this->aspect = T();
+        }
+    }
 
     bool IsActive;
-    std::array<Surface<T>*, 4> psurfaces;
-    std::array<Node<T>*, 4> pnodes;
-    Node<T> scenter;
-    T sround;
-    Node<T> gcenter;
-    T volume;
-    T aspect;
+    std::array<Surface<N, T>*, 4> psurfaces;
+    std::array<N*, 4> pnodes;
+    N scenter, gcenter;
+    T sround, volume, aspect;
 
-    Element<T>* GetLocateId(Node<T>*, T);
-    bool IsInSphere(Node<T>*, T);
-    Surface<T>* GetAdjacentSurface(Element<T>*);
+    Element<N, T>* GetLocateId(N* _pnode, T EPS) {
+        for (auto surface : this->psurfaces) {
+            if (surface->IsRayCross(this->gcenter, this->gcenter - *_pnode,
+                                    EPS)) {
+                return surface->pneighbor;
+            }
+        }
+        return this;
+    }
+    bool IsInSphere(N* _pnode, T EPS) {
+        return sround + EPS > (this->scenter - *_pnode).norm();
+    }
+    Surface<N, T>* GetAdjacentSurface(Element<N, T>* _pelement) {
+        for (auto& psurface : this->psurfaces) {
+            if (psurface->pneighbor == _pelement) {
+                return psurface;
+            }
+        }
+        return nullptr;
+    }
 };
-
-template <class T>
-Element<T>::Element() {}
-
-template <class T>
-Element<T>::~Element() {
-    for (auto& psurface : this->psurfaces) {
-        delete psurface;
-    }
-}
-
-template <class T>
-Element<T>::Element(Node<T>* _pnode0, Node<T>* _pnode1, Node<T>* _pnode2,
-                    Node<T>* _pnode3) {
-    this->IsActive = true;
-
-    //----------Set nodes----------
-    this->pnodes[0] = _pnode0;
-    this->pnodes[1] = _pnode1;
-    this->pnodes[2] = _pnode2;
-    this->pnodes[3] = _pnode3;
-
-    //----------Set surfaces----------
-    this->psurfaces[0] =
-        new Surface<T>(_pnode1, _pnode3, _pnode2, this, nullptr);
-    this->psurfaces[1] =
-        new Surface<T>(_pnode0, _pnode2, _pnode3, this, nullptr);
-    this->psurfaces[2] =
-        new Surface<T>(_pnode0, _pnode3, _pnode1, this, nullptr);
-    this->psurfaces[3] =
-        new Surface<T>(_pnode0, _pnode1, _pnode2, this, nullptr);
-
-    //----------Get center and radius of external sphere----------
-    Node<T> v0 = *_pnode1 - *_pnode0;
-    Node<T> v1 = *_pnode2 - *_pnode0;
-    Node<T> v2 = *_pnode3 - *_pnode0;
-
-    Node<T> ABC =
-        Node<T>(0.5 * ((*_pnode1 ^ *_pnode1) - (*_pnode0 ^ *_pnode0)),
-                0.5 * ((*_pnode2 ^ *_pnode2) - (*_pnode0 ^ *_pnode0)),
-                0.5 * ((*_pnode3 ^ *_pnode3) - (*_pnode0 ^ *_pnode0)), -1, -1);
-
-    T detP = v0 ^ (v1 * v2);
-    Node<T> P0 = v1 * v2;
-    Node<T> P1 = v2 * v0;
-    Node<T> P2 = v0 * v1;
-
-    this->scenter =
-        Node<T>((ABC.x * P0.x + ABC.y * P1.x + ABC.z * P2.x) / detP,
-                (ABC.x * P0.y + ABC.y * P1.y + ABC.z * P2.y) / detP,
-                (ABC.x * P0.z + ABC.y * P1.z + ABC.z * P2.z) / detP, -1, -1);
-    this->sround = (this->scenter - *_pnode0).Norm();
-
-    //----------Get center of gravity----------
-    this->gcenter = (*_pnode0 + *_pnode1 + *_pnode2 + *_pnode3) / 4.0;
-
-    //----------Get volume----------
-    this->volume =
-        ((*_pnode1 - *_pnode0) * (*_pnode2 - *_pnode0)) ^ (*_pnode3 - *_pnode0);
-
-    //----------Get aspect ratio----------
-    this->aspect =
-        this->volume / pow(this->sround, 3.0) / (8.0 * sqrt(3.0) / 27.0);
-    if (fetestexcept(FE_DIVBYZERO)) {
-        feclearexcept(FE_ALL_EXCEPT);
-        this->aspect = T();
-    }
-}
-
-template <class T>
-Element<T>* Element<T>::GetLocateId(Node<T>* _pnode, T EPS) {
-    for (auto surface : this->psurfaces) {
-        if (surface->IsRayCross(this->gcenter, this->gcenter - *_pnode, EPS)) {
-            return surface->pneighbor;
-        }
-    }
-    return this;
-}
-
-template <class T>
-bool Element<T>::IsInSphere(Node<T>* _pnode, T EPS) {
-    if (sround + EPS > (this->scenter - *_pnode).Norm()) {
-        return true;
-    }
-    return false;
-}
-
-template <class T>
-Surface<T>* Element<T>::GetAdjacentSurface(Element<T>* _pelement) {
-    for (auto& psurface : this->psurfaces) {
-        if (psurface->pneighbor == _pelement) {
-            return psurface;
-        }
-    }
-    return nullptr;
-}
 }  // namespace DelaunayPAN3D

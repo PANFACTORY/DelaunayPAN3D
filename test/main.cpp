@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "../src/Delaunay.h"
+#include "../src/Node.h"
 
 using namespace DelaunayPAN3D;
 
@@ -56,7 +57,8 @@ bool importnode(std::vector<Node<double>*>& _pnodes, std::string _fname,
 //	Export to VTK
 //*****************************************************************************
 void exportvtk(std::vector<Node<double>*> _pnodes,
-               std::vector<Element<double>*> _pelements, std::string _fname) {
+               std::vector<Element<Node<double>, double>*> _pelements,
+               std::string _fname) {
     std::ofstream fout(_fname + ".vtk");
 
     fout << "# vtk DataFile Version 4.1\n"
@@ -90,7 +92,7 @@ int main() {
 
     //----------List of nodes and elements----------
     std::vector<Node<double>*> pnodes;
-    std::vector<Element<double>*> pelements;
+    std::vector<Element<Node<double>, double>*> pelements;
 
     //----------Import nodes----------
     if (!importnode(pnodes, filepath + "/node.dat", 0)) {
@@ -102,7 +104,8 @@ int main() {
     std::chrono::system_clock::time_point start =
         std::chrono::system_clock::now();
 
-    MakeMesh<double>(pnodes, pelements, 5000, IsCopynodeExist, 4.0, 1e-15);
+    MakeMesh<Node<double>, double>(pnodes, pelements, 5000, IsCopynodeExist,
+                                   4.0, 1e-15);
 
     std::chrono::system_clock::time_point end =
         std::chrono::system_clock::now();

@@ -12,17 +12,15 @@
 #include <vector>
 
 #include "Element.h"
-#include "Node.h"
 #include "Surface.h"
 
 namespace DelaunayPAN3D {
 //*************************************************************************
 //	Make Mesh
 //*************************************************************************
-template <class T>
-void MakeMesh(std::vector<Node<T>*>& _pnodes,
-              std::vector<Element<T>*>& _pelements, int _addnodenum,
-              bool _iscopynodeexist, T ALPHA, T EPS) {
+template <class N, class T>
+void MakeMesh(std::vector<N*>& _pnodes, std::vector<Element<N, T>*>& _pelements,
+              int _addnodenum, bool _iscopynodeexist, T ALPHA, T EPS) {
     //----------Get region which nodes exist----------
     T xmax = T(), xmin = T(), ymax = T(), ymin = T(), zmax = T(), zmin = T();
     for (auto pnode : _pnodes) {
@@ -93,37 +91,37 @@ void MakeMesh(std::vector<Node<T>*>& _pnodes,
 //*************************************************************************
 //	Make supertetrahedron
 //*************************************************************************
-template <class T>
-void MakeSupertetrahedron(std::vector<Node<T>*>& _pnodes,
-                          std::vector<Element<T>*>& _pelements, T _xmax,
+template <class N, class T>
+void MakeSupertetrahedron(std::vector<N*>& _pnodes,
+                          std::vector<Element<N, T>*>& _pelements, T _xmax,
                           T _ymax, T _zmax) {
     std::cout << "Make supertetraedron\n";
 
     //----------Make nodes of supertetrahedron----------
-    Node<T>* nst0 = new Node<T>(T(), T(), T(), -1, _pnodes.size());
+    N* nst0 = new N(T(), T(), T(), -1, _pnodes.size());
     _pnodes.push_back(nst0);
-    Node<T>* nst1 = new Node<T>(_xmax, T(), T(), -1, _pnodes.size());
+    N* nst1 = new N(_xmax, T(), T(), -1, _pnodes.size());
     _pnodes.push_back(nst1);
-    Node<T>* nst2 = new Node<T>(_xmax, _ymax, T(), -1, _pnodes.size());
+    N* nst2 = new N(_xmax, _ymax, T(), -1, _pnodes.size());
     _pnodes.push_back(nst2);
-    Node<T>* nst3 = new Node<T>(T(), _ymax, T(), -1, _pnodes.size());
+    N* nst3 = new N(T(), _ymax, T(), -1, _pnodes.size());
     _pnodes.push_back(nst3);
-    Node<T>* nst4 = new Node<T>(T(), T(), _zmax, -1, _pnodes.size());
+    N* nst4 = new N(T(), T(), _zmax, -1, _pnodes.size());
     _pnodes.push_back(nst4);
-    Node<T>* nst5 = new Node<T>(_xmax, T(), _zmax, -1, _pnodes.size());
+    N* nst5 = new N(_xmax, T(), _zmax, -1, _pnodes.size());
     _pnodes.push_back(nst5);
-    Node<T>* nst6 = new Node<T>(_xmax, _ymax, _zmax, -1, _pnodes.size());
+    N* nst6 = new N(_xmax, _ymax, _zmax, -1, _pnodes.size());
     _pnodes.push_back(nst6);
-    Node<T>* nst7 = new Node<T>(T(), _ymax, _zmax, -1, _pnodes.size());
+    N* nst7 = new N(T(), _ymax, _zmax, -1, _pnodes.size());
     _pnodes.push_back(nst7);
 
     //----------Make elements of supertetrahedron----------
-    _pelements.push_back(new Element<T>(nst1, nst3, nst0, nst7));
-    _pelements.push_back(new Element<T>(nst2, nst1, nst6, nst7));
-    _pelements.push_back(new Element<T>(nst2, nst3, nst1, nst7));
-    _pelements.push_back(new Element<T>(nst1, nst5, nst6, nst7));
-    _pelements.push_back(new Element<T>(nst1, nst0, nst5, nst7));
-    _pelements.push_back(new Element<T>(nst4, nst5, nst0, nst7));
+    _pelements.push_back(new Element<N, T>(nst1, nst3, nst0, nst7));
+    _pelements.push_back(new Element<N, T>(nst2, nst1, nst6, nst7));
+    _pelements.push_back(new Element<N, T>(nst2, nst3, nst1, nst7));
+    _pelements.push_back(new Element<N, T>(nst1, nst5, nst6, nst7));
+    _pelements.push_back(new Element<N, T>(nst1, nst0, nst5, nst7));
+    _pelements.push_back(new Element<N, T>(nst4, nst5, nst0, nst7));
 
     //----------Make connection of supertetrahedron----------
     for (auto& pelement : _pelements) {
@@ -146,16 +144,16 @@ void MakeSupertetrahedron(std::vector<Node<T>*>& _pnodes,
 //*************************************************************************
 //	Mesh local
 //*************************************************************************
-template <class T>
-void MeshLocal(Node<T>* _pnode, Element<T>* _pethis,
-               std::vector<Element<T>*>& _pelements, T EPS) {
-    std::vector<Element<T>*> stack, substack;
-    std::vector<Surface<T>*> sstack;
+template <class N, class T>
+void MeshLocal(N* _pnode, Element<N, T>* _pethis,
+               std::vector<Element<N, T>*>& _pelements, T EPS) {
+    std::vector<Element<N, T>*> stack, substack;
+    std::vector<Surface<N, T>*> sstack;
 
     //----------Get elements which node is in----------
     substack.push_back(_pethis);
     while (substack.size()) {
-        Element<T>* pend = *(substack.end() - 1);
+        Element<N, T>* pend = *(substack.end() - 1);
         substack.pop_back();
 
         if (pend->IsActive) {
@@ -163,7 +161,7 @@ void MeshLocal(Node<T>* _pnode, Element<T>* _pethis,
             pend->IsActive = false;
 
             for (auto& psurface : pend->psurfaces) {
-                Element<T>* pneighbor = psurface->pneighbor;
+                Element<N, T>* pneighbor = psurface->pneighbor;
                 if (pneighbor != nullptr &&
                     pneighbor->IsInSphere(_pnode, EPS)) {
                     substack.push_back(pneighbor);
@@ -181,13 +179,12 @@ void MeshLocal(Node<T>* _pnode, Element<T>* _pethis,
 
         for (int i = 0; i < sstack.size(); i++) {
             if (sstack[i]->IsActive) {
-                Element<T> D =
-                    Element<T>(sstack[i]->pnodes[0], sstack[i]->pnodes[1],
-                               sstack[i]->pnodes[2], _pnode);
+                Element<N, T> D(sstack[i]->pnodes[0], sstack[i]->pnodes[1],
+                                sstack[i]->pnodes[2], _pnode);
 
                 //----------if there are crevices----------
                 if (D.volume < EPS) {
-                    Element<T>* peadd = sstack[i]->pneighbor;
+                    Element<N, T>* peadd = sstack[i]->pneighbor;
 
                     //----------if able to add elements----------
                     if (peadd != nullptr) {
@@ -198,7 +195,7 @@ void MeshLocal(Node<T>* _pnode, Element<T>* _pethis,
 
                             //----------make surfaces isactive false----------
                             for (auto& psurface : peadd->psurfaces) {
-                                Element<T>* pneighbor = psurface->pneighbor;
+                                Element<N, T>* pneighbor = psurface->pneighbor;
                                 if (pneighbor != nullptr &&
                                     !pneighbor->IsActive) {
                                     pneighbor->GetAdjacentSurface(peadd)
@@ -218,12 +215,12 @@ void MeshLocal(Node<T>* _pnode, Element<T>* _pethis,
     }
 
     //----------Make new elements----------
-    std::vector<Element<T>*> penew;
+    std::vector<Element<N, T>*> penew;
     for (auto& psurface : sstack) {
         if (psurface->IsActive) {
-            Element<T>* tmp =
-                new Element<T>(psurface->pnodes[0], psurface->pnodes[1],
-                               psurface->pnodes[2], _pnode);
+            Element<N, T>* tmp =
+                new Element<N, T>(psurface->pnodes[0], psurface->pnodes[1],
+                                  psurface->pnodes[2], _pnode);
             tmp->psurfaces[3]->pneighbor = psurface->pneighbor;
             if (psurface->pneighbor != nullptr) {
                 psurface->pneighbor->GetAdjacentSurface(psurface->pparent)
@@ -271,17 +268,17 @@ void MeshLocal(Node<T>* _pnode, Element<T>* _pethis,
 //*************************************************************************
 //	Make rough mesh
 //*************************************************************************
-template <class T>
-void MakeRoughMesh(std::vector<Node<T>*> _pnodes,
-                   std::vector<Element<T>*>& _pelements, T EPS) {
+template <class N, class T>
+void MakeRoughMesh(std::vector<N*> _pnodes,
+                   std::vector<Element<N, T>*>& _pelements, T EPS) {
     std::cout << "Make rough mesh\n";
 
-    Element<T>* pethis = _pelements[0];
+    Element<N, T>* pethis = _pelements[0];
     for (auto& pnode : _pnodes) {
         if (pnode->type != -1) {
             int count = 0;
             while (1) {
-                Element<T>* penext = pethis->GetLocateId(pnode, EPS);
+                Element<N, T>* penext = pethis->GetLocateId(pnode, EPS);
                 //----------if node is in the element----------
                 if (penext == pethis) {
                     MeshLocal(pnode, pethis, _pelements, EPS);
@@ -298,8 +295,8 @@ void MakeRoughMesh(std::vector<Node<T>*> _pnodes,
 //*************************************************************************
 //	Delete supertetrahedron
 //*************************************************************************
-template <class T>
-void DeleteSupertetrahedron(std::vector<Element<T>*>& _pelements) {
+template <class N, class T>
+void DeleteSupertetrahedron(std::vector<Element<N, T>*>& _pelements) {
     std::cout << "Delete supertetraedron\n";
 
     for (auto pelement = _pelements.begin(); pelement != _pelements.end();) {
@@ -324,8 +321,8 @@ void DeleteSupertetrahedron(std::vector<Element<T>*>& _pelements) {
 //*************************************************************************
 //	Delete elements at crevice part
 //*************************************************************************
-template <class T>
-void DeleteCreviceElement(std::vector<Element<T>*>& _pelements) {
+template <class N, class T>
+void DeleteCreviceElement(std::vector<Element<N, T>*>& _pelements) {
     std::cout << "Delete Crevice Element\n";
 
     for (auto pelement = _pelements.begin(); pelement != _pelements.end();) {
@@ -349,24 +346,24 @@ void DeleteCreviceElement(std::vector<Element<T>*>& _pelements) {
 //*************************************************************************
 //	Make fine mesh
 //*************************************************************************
-template <class T>
-void MakeFineMesh(std::vector<Node<T>*>& _pnodes,
-                  std::vector<Element<T>*>& _pelements, int _addnodenum,
+template <class N, class T>
+void MakeFineMesh(std::vector<N*>& _pnodes,
+                  std::vector<Element<N, T>*>& _pelements, int _addnodenum,
                   T EPS) {
     std::cout << "Make fine mesh\n";
 
     for (int i = 0; i < _addnodenum; i++) {
         //----------Find element which has longest edge----------
         T edgelengthmax = T();
-        Element<T>* pethis = nullptr;
-        Node<T>* pnode0 = nullptr;
-        Node<T>* pnode1 = nullptr;
+        Element<N, T>* pethis = nullptr;
+        N* pnode0 = nullptr;
+        N* pnode1 = nullptr;
 
         for (auto pelement : _pelements) {
             for (int j = 0; j < 3; j++) {
                 for (int k = j + 1; k < 3; k++) {
                     T edgelength =
-                        (*pelement->pnodes[k] - *pelement->pnodes[j]).Norm();
+                        (*pelement->pnodes[k] - *pelement->pnodes[j]).norm();
                     if (edgelength > edgelengthmax) {
                         edgelengthmax = edgelength;
                         pethis = pelement;
@@ -378,7 +375,7 @@ void MakeFineMesh(std::vector<Node<T>*>& _pnodes,
         }
 
         //----------Add Node----------
-        Node<T>* tmp = new Node<T>((*pnode0 + *pnode1) / 2.0);
+        N* tmp = new N((*pnode0 + *pnode1) / 2.0);
         tmp->type = 2;
         tmp->id = _pnodes.size();
         _pnodes.push_back(tmp);
