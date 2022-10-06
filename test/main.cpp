@@ -65,7 +65,8 @@ void exportvtk(std::vector<Node<double>*> _pnodes,
          << _fname << "\nASCII\nDATASET UNSTRUCTURED_GRID\n";
     fout << "POINTS\t" << _pnodes.size() << "\tfloat\n";
     for (auto pnode : _pnodes) {
-        fout << pnode->x << "\t" << pnode->y << "\t" << pnode->z << "\n";
+        fout << (*pnode)[0] << "\t" << (*pnode)[1] << "\t" << (*pnode)[2]
+             << "\n";
     }
     fout << "CELLS\t" << _pelements.size() << "\t" << _pelements.size() * 5
          << "\n";

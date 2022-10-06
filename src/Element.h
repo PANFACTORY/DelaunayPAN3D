@@ -60,10 +60,10 @@ class Element {
         N P1 = v2.cross(v0);
         N P2 = v0.cross(v1);
 
-        this->scenter =
-            N((ABC.x * P0.x + ABC.y * P1.x + ABC.z * P2.x) / detP,
-              (ABC.x * P0.y + ABC.y * P1.y + ABC.z * P2.y) / detP,
-              (ABC.x * P0.z + ABC.y * P1.z + ABC.z * P2.z) / detP, -1, -1);
+        this->scenter = N(
+            (ABC[0] * P0[0] + ABC[1] * P1[0] + ABC[2] * P2[0]) / detP,
+            (ABC[0] * P0[1] + ABC[1] * P1[1] + ABC[2] * P2[1]) / detP,
+            (ABC[0] * P0[2] + ABC[1] * P1[2] + ABC[2] * P2[2]) / detP, -1, -1);
         this->sround = (this->scenter - *_pnode0).norm();
 
         //----------Get center of gravity----------

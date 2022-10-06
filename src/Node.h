@@ -6,69 +6,66 @@
 //*********************************************************
 
 #pragma once
+#include <array>
 #include <cmath>
 
 namespace DelaunayPAN3D {
 template <class T>
 class Node {
    public:
-    Node();
-    ~Node();
-    Node(T, T, T, int, int);
+    Node() {}
+    ~Node() {}
+    Node(T _x, T _y, T _z, int _type, int _id) {
+        this->x[0] = _x;
+        this->x[1] = _y;
+        this->x[2] = _z;
+        this->type = _type;
+        this->id = _id;
+    }
 
-    T x, y, z;
+    const Node<T> operator+(const Node<T>& _node) const {
+        return Node<T>(this->x[0] + _node.x[0], this->x[1] + _node.x[1],
+                       this->x[2] + _node.x[2], -1, -1);
+    }
+    const Node<T> operator-(const Node<T>& _node) const {
+        return Node<T>(this->x[0] - _node.x[0], this->x[1] - _node.x[1],
+                       this->x[2] - _node.x[2], -1, -1);
+    }
+    const Node<T> operator*(T _a) const {
+        return Node<T>(this->x[0] * _a, this->x[1] * _a, this->x[2] * _a, -1,
+                       -1);
+    }
+    const Node<T> operator/(T _a) const {
+        return Node<T>(this->x[0] / _a, this->x[1] / _a, this->x[2] / _a, -1,
+                       -1);
+    }
+    bool operator==(const Node<T>& _node) const {
+        T EPS = 1e-15;
+        if (fabs(this->x[0] - _node.x[0]) < EPS &&
+            fabs(this->x[1] - _node.x[1]) < EPS &&
+            fabs(this->x[2] - _node.x[2]) < EPS) {
+            return true;
+        }
+        return false;
+    }
+    T& operator[](int i) { return this->x[i]; }
+    T& operator()(int i) { return this->x[i]; }
+
+    T dot(const Node<T>& node) const {
+        return this->x[0] * node.x[0] + this->x[1] * node.x[1] +
+               this->x[2] * node.x[2];
+    }
+    const Node<T> cross(const Node<T>& node) const {
+        return Node<T>(this->x[1] * node.x[2] - this->x[2] * node.x[1],
+                       this->x[2] * node.x[0] - this->x[0] * node.x[2],
+                       this->x[0] * node.x[1] - this->x[1] * node.x[0], -1, -1);
+    }
+    T norm() const { return sqrt(this->dot(*this)); }
+
     int type;
     int id;
 
-    const Node<T> operator+(const Node<T>& _node) const {
-        return Node<T>(this->x + _node.x, this->y + _node.y, this->z + _node.z,
-                       -1, -1);
-    }
-    const Node<T> operator-(const Node<T>& _node) const {
-        return Node<T>(this->x - _node.x, this->y - _node.y, this->z - _node.z,
-                       -1, -1);
-    }
-    const Node<T> operator*(T _a) const {
-        return Node<T>(this->x * _a, this->y * _a, this->z * _a, -1, -1);
-    }
-    const Node<T> operator/(T _a) const {
-        return Node<T>(this->x / _a, this->y / _a, this->z / _a, -1, -1);
-    }
-    bool operator==(const Node<T>&);
-
-    T dot(const Node<T>& node) const {
-        return this->x * node.x + this->y * node.y + this->z * node.z;
-    }
-    const Node<T> cross(const Node<T>& node) const {
-        return Node<T>(this->y * node.z - this->z * node.y,
-                       this->z * node.x - this->x * node.z,
-                       this->x * node.y - this->y * node.x, -1, -1);
-    }
-    T norm() const { return sqrt(this->dot(*this)); }
+   private:
+    std::array<T, 3> x;
 };
-
-template <class T>
-Node<T>::Node() {}
-
-template <class T>
-Node<T>::~Node() {}
-
-template <class T>
-Node<T>::Node(T _x, T _y, T _z, int _type, int _id) {
-    this->x = _x;
-    this->y = _y;
-    this->z = _z;
-    this->type = _type;
-    this->id = _id;
-}
-
-template <class T>
-bool Node<T>::operator==(const Node<T>& _node) {
-    T EPS = 1e-15;
-    if (fabs(this->x - _node.x) < EPS && fabs(this->y - _node.y) < EPS &&
-        fabs(this->z - _node.z) < EPS) {
-        return true;
-    }
-    return false;
-}
 }  // namespace DelaunayPAN3D

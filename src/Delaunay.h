@@ -24,23 +24,23 @@ void MakeMesh(std::vector<N*>& _pnodes, std::vector<Element<N, T>*>& _pelements,
     //----------Get region which nodes exist----------
     T xmax = T(), xmin = T(), ymax = T(), ymin = T(), zmax = T(), zmin = T();
     for (auto pnode : _pnodes) {
-        if (pnode->x > xmax) {
-            xmax = pnode->x;
+        if ((*pnode)[0] > xmax) {
+            xmax = (*pnode)[0];
         }
-        if (pnode->x < xmin) {
-            xmin = pnode->x;
+        if ((*pnode)[0] < xmin) {
+            xmin = (*pnode)[0];
         }
-        if (pnode->y > ymax) {
-            ymax = pnode->y;
+        if ((*pnode)[1] > ymax) {
+            ymax = (*pnode)[1];
         }
-        if (pnode->y < ymin) {
-            ymin = pnode->y;
+        if ((*pnode)[1] < ymin) {
+            ymin = (*pnode)[1];
         }
-        if (pnode->z > zmax) {
-            zmax = pnode->z;
+        if ((*pnode)[2] > zmax) {
+            zmax = (*pnode)[2];
         }
-        if (pnode->z < zmin) {
-            zmin = pnode->z;
+        if ((*pnode)[2] < zmin) {
+            zmin = (*pnode)[2];
         }
     }
 
@@ -55,12 +55,12 @@ void MakeMesh(std::vector<N*>& _pnodes, std::vector<Element<N, T>*>& _pelements,
         dmax = zrange;
     }
     for (auto& pnode : _pnodes) {
-        pnode->x =
-            (pnode->x - xmin) / dmax + 0.5 * (ALPHA - 1.0) * xrange / dmax;
-        pnode->y =
-            (pnode->y - ymin) / dmax + 0.5 * (ALPHA - 1.0) * yrange / dmax;
-        pnode->z =
-            (pnode->z - zmin) / dmax + 0.5 * (ALPHA - 1.0) * zrange / dmax;
+        (*pnode)[0] =
+            ((*pnode)[0] - xmin) / dmax + 0.5 * (ALPHA - 1.0) * xrange / dmax;
+        (*pnode)[1] =
+            ((*pnode)[1] - ymin) / dmax + 0.5 * (ALPHA - 1.0) * yrange / dmax;
+        (*pnode)[2] =
+            ((*pnode)[2] - zmin) / dmax + 0.5 * (ALPHA - 1.0) * zrange / dmax;
     }
 
     //----------Make supertetrahedron----------
@@ -82,9 +82,9 @@ void MakeMesh(std::vector<N*>& _pnodes, std::vector<Element<N, T>*>& _pelements,
 
     //----------Renormalize cordinate----------
     for (auto& pnode : _pnodes) {
-        pnode->x = pnode->x * dmax - 0.5 * (ALPHA - 1.0) * xrange + xmin;
-        pnode->y = pnode->y * dmax - 0.5 * (ALPHA - 1.0) * yrange + ymin;
-        pnode->z = pnode->z * dmax - 0.5 * (ALPHA - 1.0) * zrange + zmin;
+        (*pnode)[0] = (*pnode)[0] * dmax - 0.5 * (ALPHA - 1.0) * xrange + xmin;
+        (*pnode)[1] = (*pnode)[1] * dmax - 0.5 * (ALPHA - 1.0) * yrange + ymin;
+        (*pnode)[2] = (*pnode)[2] * dmax - 0.5 * (ALPHA - 1.0) * zrange + zmin;
     }
 }
 
