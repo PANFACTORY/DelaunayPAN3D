@@ -84,7 +84,6 @@ class Element {
 
     bool IsActive;
     std::array<Surface<N, T>*, 4> psurfaces;
-    std::array<N*, 4> pnodes;
     N scenter, gcenter;
     T sround, volume, aspect;
 
@@ -108,5 +107,23 @@ class Element {
         }
         return nullptr;
     }
+    bool IsSuperTetraedron() const {
+        return this->pnodes[0]->type == -1 || this->pnodes[1]->type == -1 ||
+               this->pnodes[2]->type == -1 || this->pnodes[3]->type == -1;
+    }
+    bool IsCrevice() const {
+        return this->pnodes[0]->type == this->pnodes[1]->type &&
+               this->pnodes[1]->type == this->pnodes[2]->type &&
+               this->pnodes[2]->type == this->pnodes[3]->type;
+    }
+    T GetEdgeLength(int i, int j) const {
+        return ((*this->pnodes[i]) - (*this->pnodes[j])).norm();
+    }
+    const N GetCentorNode(int i, int j) const {
+        return (*this->pnodes[i] + *this->pnodes[j]) / 2.0;
+    }
+
+   private:
+    std::array<N*, 4> pnodes;
 };
 }  // namespace DelaunayPAN3D

@@ -56,39 +56,40 @@ bool importnode(std::vector<Vec3<double>*>& _pnodes, std::string _fname,
 //*****************************************************************************
 //	Export to VTK
 //*****************************************************************************
-void exportvtk(std::vector<Vec3<double>*> _pnodes,
-               std::vector<Element<Vec3<double>, double>*> _pelements,
-               std::string _fname) {
-    // Convert Vec3* to index
-    std::map<Vec3<double>*, int> index;
-    int idx = 0;
-    for (auto pnode : _pnodes) {
-        index[pnode] = idx++;
-    }
+// void exportvtk(std::vector<Vec3<double>*> _pnodes,
+//                std::vector<Element<Vec3<double>, double>*> _pelements,
+//                std::string _fname) {
+//     // Convert Vec3* to index
+//     std::map<Vec3<double>*, int> index;
+//     int idx = 0;
+//     for (auto pnode : _pnodes) {
+//         index[pnode] = idx++;
+//     }
 
-    std::ofstream fout(_fname + ".vtk");
+//     std::ofstream fout(_fname + ".vtk");
 
-    fout << "# vtk DataFile Version 4.1\n"
-         << _fname << "\nASCII\nDATASET UNSTRUCTURED_GRID\n";
-    fout << "POINTS\t" << _pnodes.size() << "\tfloat\n";
-    for (auto pnode : _pnodes) {
-        fout << (*pnode)[0] << "\t" << (*pnode)[1] << "\t" << (*pnode)[2]
-             << "\n";
-    }
-    fout << "CELLS\t" << _pelements.size() << "\t" << _pelements.size() * 5
-         << "\n";
-    for (auto pelement : _pelements) {
-        fout << "4\t" << index[pelement->pnodes[0]] << "\t"
-             << index[pelement->pnodes[1]] << "\t" << index[pelement->pnodes[2]]
-             << "\t" << index[pelement->pnodes[3]] << "\n";
-    }
-    fout << "CELL_TYPES\t" << _pelements.size() << "\n";
-    for (int i = 0; i < _pelements.size(); i++) {
-        fout << "10\n";
-    }
+//     fout << "# vtk DataFile Version 4.1\n"
+//          << _fname << "\nASCII\nDATASET UNSTRUCTURED_GRID\n";
+//     fout << "POINTS\t" << _pnodes.size() << "\tfloat\n";
+//     for (auto pnode : _pnodes) {
+//         fout << (*pnode)[0] << "\t" << (*pnode)[1] << "\t" << (*pnode)[2]
+//              << "\n";
+//     }
+//     fout << "CELLS\t" << _pelements.size() << "\t" << _pelements.size() * 5
+//          << "\n";
+//     for (auto pelement : _pelements) {
+//         fout << "4\t" << index[pelement->pnodes[0]] << "\t"
+//              << index[pelement->pnodes[1]] << "\t" <<
+//              index[pelement->pnodes[2]]
+//              << "\t" << index[pelement->pnodes[3]] << "\n";
+//     }
+//     fout << "CELL_TYPES\t" << _pelements.size() << "\n";
+//     for (int i = 0; i < _pelements.size(); i++) {
+//         fout << "10\n";
+//     }
 
-    fout.close();
-}
+//     fout.close();
+// }
 
 //*****************************************************************************
 //	main
@@ -130,7 +131,7 @@ int main() {
     std::cout << "element:  \t" << pelements.size() << "\n";
     std::cout << "Export to:\t" << filepath << "/mesh.vtk\n";
     std::cout << "******************************\n";
-    exportvtk(pnodes, pelements, filepath + "/mesh");
+    // exportvtk(pnodes, pelements, filepath + "/mesh");
 
     //----------Release memory----------
     for (auto pelement : pelements) {

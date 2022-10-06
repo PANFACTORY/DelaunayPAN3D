@@ -300,10 +300,7 @@ void DeleteSupertetrahedron(std::vector<Element<N, T>*>& _pelements) {
     std::cout << "Delete supertetraedron\n";
 
     for (auto pelement = _pelements.begin(); pelement != _pelements.end();) {
-        if ((*pelement)->pnodes[0]->type == -1 ||
-            (*pelement)->pnodes[1]->type == -1 ||
-            (*pelement)->pnodes[2]->type == -1 ||
-            (*pelement)->pnodes[3]->type == -1) {
+        if ((*pelement)->IsSuperTetraedron()) {
             for (auto& psurface : (*pelement)->psurfaces) {
                 if (psurface->pneighbor != nullptr) {
                     psurface->pneighbor->GetAdjacentSurface(psurface->pparent)
@@ -326,9 +323,7 @@ void DeleteCreviceElement(std::vector<Element<N, T>*>& _pelements) {
     std::cout << "Delete Crevice Element\n";
 
     for (auto pelement = _pelements.begin(); pelement != _pelements.end();) {
-        if ((*pelement)->pnodes[0]->type == (*pelement)->pnodes[1]->type &&
-            (*pelement)->pnodes[1]->type == (*pelement)->pnodes[2]->type &&
-            (*pelement)->pnodes[2]->type == (*pelement)->pnodes[3]->type) {
+        if ((*pelement)->IsCrevice()) {
             for (auto& psurface : (*pelement)->psurfaces) {
                 if (psurface->pneighbor != nullptr) {
                     psurface->pneighbor->GetAdjacentSurface(psurface->pparent)
@@ -356,26 +351,23 @@ void MakeFineMesh(std::vector<N*>& _pnodes,
         //----------Find element which has longest edge----------
         T edgelengthmax = T();
         Element<N, T>* pethis = nullptr;
-        N* pnode0 = nullptr;
-        N* pnode1 = nullptr;
+        N pnode;
 
         for (auto pelement : _pelements) {
             for (int j = 0; j < 3; j++) {
                 for (int k = j + 1; k < 3; k++) {
-                    T edgelength =
-                        (*pelement->pnodes[k] - *pelement->pnodes[j]).norm();
+                    T edgelength = pelement->GetEdgeLength(k, j);
                     if (edgelength > edgelengthmax) {
                         edgelengthmax = edgelength;
                         pethis = pelement;
-                        pnode0 = pelement->pnodes[j];
-                        pnode1 = pelement->pnodes[k];
+                        pnode = pelement->GetCentorNode(j, k);
                     }
                 }
             }
         }
 
         //----------Add Node----------
-        N* tmp = new N((*pnode0 + *pnode1) / 2.0);
+        N* tmp = new N(pnode);
         tmp->type = 2;
         _pnodes.push_back(tmp);
         MeshLocal(tmp, pethis, _pelements, EPS);
