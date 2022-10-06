@@ -98,21 +98,21 @@ void MakeSupertetrahedron(std::vector<N*>& _pnodes,
     std::cout << "Make supertetraedron\n";
 
     //----------Make nodes of supertetrahedron----------
-    N* nst0 = new N(T(), T(), T(), -1, _pnodes.size());
+    N* nst0 = new N(T(), T(), T(), -1);
     _pnodes.push_back(nst0);
-    N* nst1 = new N(_xmax, T(), T(), -1, _pnodes.size());
+    N* nst1 = new N(_xmax, T(), T(), -1);
     _pnodes.push_back(nst1);
-    N* nst2 = new N(_xmax, _ymax, T(), -1, _pnodes.size());
+    N* nst2 = new N(_xmax, _ymax, T(), -1);
     _pnodes.push_back(nst2);
-    N* nst3 = new N(T(), _ymax, T(), -1, _pnodes.size());
+    N* nst3 = new N(T(), _ymax, T(), -1);
     _pnodes.push_back(nst3);
-    N* nst4 = new N(T(), T(), _zmax, -1, _pnodes.size());
+    N* nst4 = new N(T(), T(), _zmax, -1);
     _pnodes.push_back(nst4);
-    N* nst5 = new N(_xmax, T(), _zmax, -1, _pnodes.size());
+    N* nst5 = new N(_xmax, T(), _zmax, -1);
     _pnodes.push_back(nst5);
-    N* nst6 = new N(_xmax, _ymax, _zmax, -1, _pnodes.size());
+    N* nst6 = new N(_xmax, _ymax, _zmax, -1);
     _pnodes.push_back(nst6);
-    N* nst7 = new N(T(), _ymax, _zmax, -1, _pnodes.size());
+    N* nst7 = new N(T(), _ymax, _zmax, -1);
     _pnodes.push_back(nst7);
 
     //----------Make elements of supertetrahedron----------
@@ -377,7 +377,6 @@ void MakeFineMesh(std::vector<N*>& _pnodes,
         //----------Add Node----------
         N* tmp = new N((*pnode0 + *pnode1) / 2.0);
         tmp->type = 2;
-        tmp->id = _pnodes.size();
         _pnodes.push_back(tmp);
         MeshLocal(tmp, pethis, _pelements, EPS);
     }

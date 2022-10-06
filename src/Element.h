@@ -50,20 +50,20 @@ class Element {
         N v1 = *_pnode2 - *_pnode0;
         N v2 = *_pnode3 - *_pnode0;
 
-        N ABC = N(0.5 * ((*_pnode1).dot(*_pnode1) - (*_pnode0).dot(*_pnode0)),
-                  0.5 * ((*_pnode2).dot(*_pnode2) - (*_pnode0).dot(*_pnode0)),
-                  0.5 * ((*_pnode3).dot(*_pnode3) - (*_pnode0).dot(*_pnode0)),
-                  -1, -1);
+        N ABC =
+            N(0.5 * ((*_pnode1).dot(*_pnode1) - (*_pnode0).dot(*_pnode0)),
+              0.5 * ((*_pnode2).dot(*_pnode2) - (*_pnode0).dot(*_pnode0)),
+              0.5 * ((*_pnode3).dot(*_pnode3) - (*_pnode0).dot(*_pnode0)), -1);
 
         T detP = v0.dot(v1.cross(v2));
         N P0 = v1.cross(v2);
         N P1 = v2.cross(v0);
         N P2 = v0.cross(v1);
 
-        this->scenter = N(
-            (ABC[0] * P0[0] + ABC[1] * P1[0] + ABC[2] * P2[0]) / detP,
-            (ABC[0] * P0[1] + ABC[1] * P1[1] + ABC[2] * P2[1]) / detP,
-            (ABC[0] * P0[2] + ABC[1] * P1[2] + ABC[2] * P2[2]) / detP, -1, -1);
+        this->scenter =
+            N((ABC[0] * P0[0] + ABC[1] * P1[0] + ABC[2] * P2[0]) / detP,
+              (ABC[0] * P0[1] + ABC[1] * P1[1] + ABC[2] * P2[1]) / detP,
+              (ABC[0] * P0[2] + ABC[1] * P1[2] + ABC[2] * P2[2]) / detP, -1);
         this->sround = (this->scenter - *_pnode0).norm();
 
         //----------Get center of gravity----------

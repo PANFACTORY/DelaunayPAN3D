@@ -9,19 +9,20 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "../src/Delaunay.h"
-#include "../src/Node.h"
+#include "../src/vec3.h"
 
 using namespace DelaunayPAN3D;
 
 //*****************************************************************************
 //	Import nodes
 //*****************************************************************************
-bool importnode(std::vector<Node<double>*>& _pnodes, std::string _fname,
+bool importnode(std::vector<Vec3<double>*>& _pnodes, std::string _fname,
                 int _type) {
     std::ifstream fin(_fname);
     if (!fin) {
@@ -37,16 +38,15 @@ bool importnode(std::vector<Node<double>*>& _pnodes, std::string _fname,
 
         bool is_same_node = false;
         for (auto pnode : _pnodes) {
-            if (Node<double>(stod(tmpx[0]), stod(tmpx[1]), stod(tmpx[2]), -1,
-                             -1) == *pnode) {
+            if (Vec3<double>(stod(tmpx[0]), stod(tmpx[1]), stod(tmpx[2]), -1) ==
+                *pnode) {
                 is_same_node = true;
                 break;
             }
         }
         if (!is_same_node) {
-            _pnodes.push_back(new Node<double>(stod(tmpx[0]), stod(tmpx[1]),
-                                               stod(tmpx[2]), _type,
-                                               _pnodes.size()));
+            _pnodes.push_back(new Vec3<double>(stod(tmpx[0]), stod(tmpx[1]),
+                                               stod(tmpx[2]), _type));
         }
     }
     fin.close();
@@ -56,9 +56,16 @@ bool importnode(std::vector<Node<double>*>& _pnodes, std::string _fname,
 //*****************************************************************************
 //	Export to VTK
 //*****************************************************************************
-void exportvtk(std::vector<Node<double>*> _pnodes,
-               std::vector<Element<Node<double>, double>*> _pelements,
+void exportvtk(std::vector<Vec3<double>*> _pnodes,
+               std::vector<Element<Vec3<double>, double>*> _pelements,
                std::string _fname) {
+    // Convert Vec3* to index
+    std::map<Vec3<double>*, int> index;
+    int idx = 0;
+    for (auto pnode : _pnodes) {
+        index[pnode] = idx++;
+    }
+
     std::ofstream fout(_fname + ".vtk");
 
     fout << "# vtk DataFile Version 4.1\n"
@@ -71,9 +78,9 @@ void exportvtk(std::vector<Node<double>*> _pnodes,
     fout << "CELLS\t" << _pelements.size() << "\t" << _pelements.size() * 5
          << "\n";
     for (auto pelement : _pelements) {
-        fout << "4\t" << pelement->pnodes[0]->id << "\t"
-             << pelement->pnodes[1]->id << "\t" << pelement->pnodes[2]->id
-             << "\t" << pelement->pnodes[3]->id << "\n";
+        fout << "4\t" << index[pelement->pnodes[0]] << "\t"
+             << index[pelement->pnodes[1]] << "\t" << index[pelement->pnodes[2]]
+             << "\t" << index[pelement->pnodes[3]] << "\n";
     }
     fout << "CELL_TYPES\t" << _pelements.size() << "\n";
     for (int i = 0; i < _pelements.size(); i++) {
@@ -92,8 +99,8 @@ int main() {
     std::cout << "**********Delaunay trianguration**********\n";
 
     //----------List of nodes and elements----------
-    std::vector<Node<double>*> pnodes;
-    std::vector<Element<Node<double>, double>*> pelements;
+    std::vector<Vec3<double>*> pnodes;
+    std::vector<Element<Vec3<double>, double>*> pelements;
 
     //----------Import nodes----------
     if (!importnode(pnodes, filepath + "/node.dat", 0)) {
@@ -105,7 +112,7 @@ int main() {
     std::chrono::system_clock::time_point start =
         std::chrono::system_clock::now();
 
-    MakeMesh<Node<double>, double>(pnodes, pelements, 5000, IsCopynodeExist,
+    MakeMesh<Vec3<double>, double>(pnodes, pelements, 5000, IsCopynodeExist,
                                    4.0, 1e-15);
 
     std::chrono::system_clock::time_point end =
